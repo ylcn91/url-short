@@ -16,7 +16,7 @@ export const authStorage = {
   saveAuth: (data: AuthResponse): void => {
     if (typeof window === "undefined") return;
 
-    localStorage.setItem(TOKEN_KEY, data.token);
+    localStorage.setItem(TOKEN_KEY, data.accessToken);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
     localStorage.setItem(WORKSPACE_KEY, JSON.stringify(data.workspace));
   },

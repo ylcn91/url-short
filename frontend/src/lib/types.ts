@@ -4,7 +4,7 @@
  */
 
 export interface User {
-  id: string;
+  id: number;
   email: string;
   name: string;
   createdAt: string;
@@ -12,11 +12,11 @@ export interface User {
 }
 
 export interface Workspace {
-  id: string;
+  id: number;
   name: string;
   slug: string;
   plan: "FREE" | "PRO" | "TEAM" | "ENTERPRISE";
-  ownerId: string;
+  ownerId: number;
   createdAt: string;
   settings: WorkspaceSettings;
 }
@@ -29,11 +29,11 @@ export interface WorkspaceSettings {
 }
 
 export interface ShortLink {
-  id: string;
+  id: number;
   shortCode: string;
   originalUrl: string;
-  workspaceId: string;
-  createdBy: string;
+  workspaceId: number;
+  createdBy: number;
   title?: string;
   description?: string;
   tags: string[];
@@ -47,8 +47,8 @@ export interface ShortLink {
 }
 
 export interface ClickEvent {
-  id: string;
-  shortLinkId: string;
+  id: number;
+  shortLinkId: number;
   timestamp: string;
   ipAddress: string;
   userAgent: string;
@@ -101,10 +101,10 @@ export interface BrowserClickData {
 }
 
 export interface ApiKey {
-  id: string;
+  id: number;
   name: string;
   key: string;
-  workspaceId: string;
+  workspaceId: number;
   createdAt: string;
   expiresAt?: string;
   lastUsedAt?: string;
@@ -117,7 +117,7 @@ export interface CreateLinkRequest {
   description?: string;
   tags?: string[];
   expiresAt?: string;
-  workspaceId: string;
+  workspaceId: number;
 }
 
 export interface UpdateLinkRequest {
@@ -162,10 +162,12 @@ export interface SignupRequest {
   email: string;
   password: string;
   name: string;
+  workspaceName: string;
+  workspaceSlug: string;
 }
 
 export interface AuthResponse {
-  token: string;
+  accessToken: string;
   user: User;
   workspace: Workspace;
 }

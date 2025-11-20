@@ -109,6 +109,14 @@ jwt:
   expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
   refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
 
+# Rate Limiting Configuration
+app:
+  rate-limit:
+    enabled: true
+    redirect-requests-per-minute: 100      # Public redirect endpoints (per IP)
+    management-requests-per-minute: 1000   # Management API endpoints (per user)
+    creation-requests-per-minute: 50       # Link creation endpoints (per user)
+
 ---
 # Development Profile
 spring:

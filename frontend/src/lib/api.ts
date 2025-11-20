@@ -20,7 +20,7 @@ import {
   ApiKey,
 } from "./types";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 class ApiError extends Error {
   constructor(
@@ -35,6 +35,7 @@ class ApiError extends Error {
 
 /**
  * Base fetch wrapper with authentication and error handling
+ * Automatically unwraps ApiResponse<T> wrapper from backend
  */
 async function fetchApi<T>(
   endpoint: string,
@@ -71,6 +72,13 @@ async function fetchApi<T>(
         error.message || "An error occurred",
         error
       );
+    }
+
+    // Unwrap ApiResponse<T> wrapper from backend
+    // Backend returns: { success: true, data: T, message: string }
+    // We extract and return just the data
+    if (data && typeof data === 'object' && 'success' in data && 'data' in data) {
+      return data.data as T;
     }
 
     return data;
@@ -138,7 +146,7 @@ export const linksApi = {
    * Get all links for a workspace with optional filtering
    */
   getLinks: async (params?: {
-    workspaceId?: string;
+    workspaceId?: number;
     page?: number;
     pageSize?: number;
     search?: string;
@@ -146,7 +154,7 @@ export const linksApi = {
     status?: "active" | "inactive" | "expired";
   }): Promise<PaginatedResponse<ShortLink>> => {
     const queryParams = new URLSearchParams();
-    if (params?.workspaceId) queryParams.set("workspaceId", params.workspaceId);
+    if (params?.workspaceId) queryParams.set("workspaceId", params.workspaceId.toString());
     if (params?.page) queryParams.set("page", params.page.toString());
     if (params?.pageSize) queryParams.set("pageSize", params.pageSize.toString());
     if (params?.search) queryParams.set("search", params.search);
@@ -162,7 +170,7 @@ export const linksApi = {
   /**
    * Get a single link by ID
    */
-  getLink: async (id: string): Promise<ShortLink> => {
+  getLink: async (id: number): Promise<ShortLink> => {
     return fetchApi<ShortLink>(`/links/${id}`);
   },
 
@@ -179,7 +187,7 @@ export const linksApi = {
   /**
    * Update an existing link
    */
-  updateLink: async (id: string, data: UpdateLinkRequest): Promise<ShortLink> => {
+  updateLink: async (id: number, data: UpdateLinkRequest): Promise<ShortLink> => {
     return fetchApi<ShortLink>(`/links/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
@@ -189,7 +197,7 @@ export const linksApi = {
   /**
    * Delete a link
    */
-  deleteLink: async (id: string): Promise<void> => {
+  deleteLink: async (id: number): Promise<void> => {
     return fetchApi<void>(`/links/${id}`, {
       method: "DELETE",
     });
@@ -208,7 +216,7 @@ export const linksApi = {
   /**
    * Toggle link active status
    */
-  toggleActive: async (id: string): Promise<ShortLink> => {
+  toggleActive: async (id: number): Promise<ShortLink> => {
     return fetchApi<ShortLink>(`/links/${id}/toggle`, {
       method: "PATCH",
     });
@@ -224,7 +232,7 @@ export const analyticsApi = {
    * Get analytics for a specific link
    */
   getLinkStats: async (
-    linkId: string,
+    linkId: number,
     params?: {
       startDate?: string;
       endDate?: string;
@@ -243,7 +251,7 @@ export const analyticsApi = {
   /**
    * Get dashboard overview stats
    */
-  getDashboardStats: async (workspaceId: string): Promise<DashboardStats> => {
+  getDashboardStats: async (workspaceId: number): Promise<DashboardStats> => {
     return fetchApi<DashboardStats>(`/analytics/dashboard/${workspaceId}`);
   },
 
@@ -251,7 +259,7 @@ export const analyticsApi = {
    * Export analytics data
    */
   exportData: async (
-    linkId: string,
+    linkId: number,
     format: "csv" | "json"
   ): Promise<Blob> => {
     const token = typeof window !== "undefined" ? localStorage.getItem("auth_token") : null;
@@ -278,7 +286,7 @@ export const workspaceApi = {
   /**
    * Get workspace details
    */
-  getWorkspace: async (id: string): Promise<Workspace> => {
+  getWorkspace: async (id: number): Promise<Workspace> => {
     return fetchApi<Workspace>(`/workspaces/${id}`);
   },
 
@@ -286,7 +294,7 @@ export const workspaceApi = {
    * Update workspace settings
    */
   updateWorkspace: async (
-    id: string,
+    id: number,
     data: Partial<Workspace>
   ): Promise<Workspace> => {
     return fetchApi<Workspace>(`/workspaces/${id}`, {
@@ -298,7 +306,7 @@ export const workspaceApi = {
   /**
    * Get workspace API keys
    */
-  getApiKeys: async (workspaceId: string): Promise<ApiKey[]> => {
+  getApiKeys: async (workspaceId: number): Promise<ApiKey[]> => {
     return fetchApi<ApiKey[]>(`/workspaces/${workspaceId}/api-keys`);
   },
 
@@ -306,7 +314,7 @@ export const workspaceApi = {
    * Create a new API key
    */
   createApiKey: async (
-    workspaceId: string,
+    workspaceId: number,
     name: string
   ): Promise<ApiKey> => {
     return fetchApi<ApiKey>(`/workspaces/${workspaceId}/api-keys`, {
@@ -318,7 +326,7 @@ export const workspaceApi = {
   /**
    * Delete an API key
    */
-  deleteApiKey: async (workspaceId: string, keyId: string): Promise<void> => {
+  deleteApiKey: async (workspaceId: number, keyId: number): Promise<void> => {
     return fetchApi<void>(`/workspaces/${workspaceId}/api-keys/${keyId}`, {
       method: "DELETE",
     });
