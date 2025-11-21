@@ -1,11 +1,13 @@
 package com.urlshort.controller;
 
+import com.urlshort.domain.DeviceType;
 import com.urlshort.dto.ClickEventDto;
 import com.urlshort.dto.ShortLinkResponse;
 import com.urlshort.event.ClickEventProducer;
 import com.urlshort.exception.LinkExpiredException;
 import com.urlshort.exception.ResourceNotFoundException;
 import com.urlshort.service.ShortLinkService;
+import com.urlshort.util.UserAgentParser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -288,8 +290,8 @@ public class RedirectController {
         try {
             log.debug("Recording click event: linkId={}, ip={}", shortLinkId, ipAddress);
 
-            // Parse user agent for device type, browser, OS
-            UserAgentInfo uaInfo = parseUserAgent(userAgent);
+            // Parse user agent for device type, browser, OS using advanced parser
+            UserAgentParser.ParseResult uaInfo = UserAgentParser.parse(userAgent);
 
             // Build click event DTO
             ClickEventDto clickEvent = ClickEventDto.builder()
@@ -302,7 +304,7 @@ public class RedirectController {
                     .referrer(referrer)
                     .country(null) // Will be enriched by consumer via GeoIP lookup
                     .city(null)    // Will be enriched by consumer via GeoIP lookup
-                    .deviceType(uaInfo.deviceType())
+                    .deviceType(mapDeviceType(uaInfo.deviceType()))
                     .browser(uaInfo.browser())
                     .os(uaInfo.os())
                     .originalUrl(originalUrl)
@@ -323,68 +325,19 @@ public class RedirectController {
     }
 
     /**
-     * Parse user agent string to extract device type, browser, and OS.
+     * Map DeviceType enum to string for ClickEventDto.
      *
-     * This is a simplified implementation. For production, consider using
-     * a library like UADetector or user-agent-utils for more accurate parsing.
-     *
-     * @param userAgent the user agent string
-     * @return UserAgentInfo containing device type, browser, and OS
+     * @param deviceType the DeviceType enum
+     * @return lowercase string representation
      */
-    private UserAgentInfo parseUserAgent(String userAgent) {
-        if (userAgent == null || userAgent.isBlank()) {
-            return new UserAgentInfo("unknown", null, null);
-        }
-
-        String ua = userAgent.toLowerCase();
-
-        // Detect device type
-        String deviceType;
-        if (ua.contains("bot") || ua.contains("crawler") || ua.contains("spider")) {
-            deviceType = "bot";
-        } else if (ua.contains("mobile") || ua.contains("android") || ua.contains("iphone")) {
-            deviceType = "mobile";
-        } else if (ua.contains("tablet") || ua.contains("ipad")) {
-            deviceType = "tablet";
-        } else {
-            deviceType = "desktop";
-        }
-
-        // Detect browser
-        String browser = null;
-        if (ua.contains("firefox")) {
-            browser = "Firefox";
-        } else if (ua.contains("chrome") && !ua.contains("edge")) {
-            browser = "Chrome";
-        } else if (ua.contains("safari") && !ua.contains("chrome")) {
-            browser = "Safari";
-        } else if (ua.contains("edge") || ua.contains("edg/")) {
-            browser = "Edge";
-        } else if (ua.contains("opera") || ua.contains("opr")) {
-            browser = "Opera";
-        }
-
-        // Detect OS
-        String os = null;
-        if (ua.contains("windows")) {
-            os = "Windows";
-        } else if (ua.contains("mac os x")) {
-            os = "macOS";
-        } else if (ua.contains("linux") && !ua.contains("android")) {
-            os = "Linux";
-        } else if (ua.contains("android")) {
-            os = "Android";
-        } else if (ua.contains("ios") || ua.contains("iphone") || ua.contains("ipad")) {
-            os = "iOS";
-        }
-
-        return new UserAgentInfo(deviceType, browser, os);
-    }
-
-    /**
-     * Simple record to hold parsed user agent information.
-     */
-    private record UserAgentInfo(String deviceType, String browser, String os) {
+    private String mapDeviceType(DeviceType deviceType) {
+        return switch (deviceType) {
+            case DESKTOP -> "desktop";
+            case MOBILE -> "mobile";
+            case TABLET -> "tablet";
+            case BOT -> "bot";
+            case UNKNOWN -> "unknown";
+        };
     }
 
     /**
