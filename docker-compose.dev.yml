@@ -1,0 +1,164 @@
+version: '3.8'
+
+# Development Docker Compose Configuration
+# This file extends docker-compose.yml with development-specific overrides
+#
+# Usage:
+#   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Features:
+# - Volume mounts for hot reload
+# - Debug ports exposed
+# - Development environment variables
+# - Reduced resource constraints
+
+services:
+  # PostgreSQL - Development Configuration
+  postgres:
+    environment:
+      POSTGRES_DB: urlshortener_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      # Mount init scripts for development database setup
+      - ./scripts/init-db.sh:/docker-entrypoint-initdb.d/init-db.sh:ro
+
+  # Redis - Development Configuration
+  redis:
+    command: redis-server --requirepass redis123 --maxmemory 128mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+
+  # Kafka - Development Configuration
+  kafka:
+    environment:
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 24
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_dev_data:/var/lib/kafka/data
+
+  # Backend - Development Configuration
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: build  # Use build stage for development
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: dev
+
+      # Database Configuration
+      DATABASE_URL: jdbc:postgresql://postgres:5432/urlshortener_dev
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+
+      # Redis Configuration
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis123
+
+      # Kafka Configuration
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+
+      # JWT Configuration
+      JWT_SECRET: dev-secret-key-for-local-development-only-do-not-use-in-production
+      JWT_EXPIRATION: 86400000
+
+      # Application Configuration
+      SERVER_PORT: 8080
+      BASE_URL: http://localhost:8080
+
+      # Debug Configuration
+      JAVA_TOOL_OPTIONS: >-
+        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+        -Xmx512m
+        -Xms256m
+
+      # Logging
+      LOGGING_LEVEL_ROOT: INFO
+      LOGGING_LEVEL_APP: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+    ports:
+      - "8080:8080"
+      - "5005:5005"  # Java Debug Wire Protocol port
+    volumes:
+      # Mount source code for hot reload (if using spring-boot-devtools)
+      - ./backend/src:/app/src:ro
+      - ./backend/target:/app/target
+      - backend_dev_logs:/var/log/url-shortener
+      # Mount Maven repository to speed up builds
+      - ~/.m2:/root/.m2:cached
+    command: >
+      sh -c "mvn clean package -DskipTests &&
+             java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
+                  -Dspring.profiles.active=dev
+                  -jar target/*.jar"
+    restart: unless-stopped
+
+  # Frontend - Development Configuration
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: deps  # Use deps stage for development
+    environment:
+      # Backend API URL (browser-side)
+      NEXT_PUBLIC_API_URL: http://localhost:8080/api/v1
+      NEXT_PUBLIC_BASE_URL: http://localhost:3000
+
+      # Internal Backend URL (server-side)
+      INTERNAL_API_URL: http://backend:8080/api/v1
+
+      # Node Environment
+      NODE_ENV: development
+
+      # Enable Next.js Fast Refresh
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "3000:3000"
+      # Expose webpack HMR port for hot reload
+      - "3001:3001"
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend:/app:cached
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  # Zookeeper - Development Configuration
+  zookeeper:
+    volumes:
+      - zookeeper_dev_data:/var/lib/zookeeper/data
+      - zookeeper_dev_logs:/var/lib/zookeeper/log
+
+# Development Volumes
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+  zookeeper_dev_data:
+    driver: local
+  zookeeper_dev_logs:
+    driver: local
+  kafka_dev_data:
+    driver: local
+  backend_dev_logs:
+    driver: local
+
+# Network Configuration (inherited from docker-compose.yml)
+networks:
+  urlshortener-network:
+    driver: bridge
