@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "URLShort - Professional URL Shortener",
@@ -15,6 +12,7 @@ export const metadata: Metadata = {
 /**
  * Root layout component
  * Wraps the entire application with providers and base HTML structure
+ * Uses system fonts for better performance and offline support
  */
 export default function RootLayout({
   children,
@@ -23,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className="font-sans antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

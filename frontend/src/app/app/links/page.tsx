@@ -81,7 +81,7 @@ export default function LinksPage() {
     }
   };
 
-  const handleDeleteLink = async (id: string) => {
+  const handleDeleteLink = async (id: number) => {
     if (!confirm("Are you sure you want to delete this link?")) return;
 
     try {

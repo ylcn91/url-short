@@ -57,7 +57,11 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      await signup(data.email, data.password, data.name);
+      // Generate default workspace name and slug from user name
+      const workspaceName = `${data.name}'s Workspace`;
+      const workspaceSlug = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+      await signup(data.email, data.password, data.name, workspaceName, workspaceSlug);
 
       toast({
         title: "Account created!",

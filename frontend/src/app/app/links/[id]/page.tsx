@@ -45,7 +45,7 @@ export default function LinkDetailPage() {
   const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const linkId = params.id as string;
+  const linkId = Number(params.id);
 
   const [dateRange, setDateRange] = React.useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],

@@ -151,7 +151,7 @@ export default function WorkspaceSettingsPage() {
 
   // Delete API key mutation
   const deleteKeyMutation = useMutation({
-    mutationFn: (keyId: string) => workspaceApi.deleteApiKey(workspace!.id, keyId),
+    mutationFn: (keyId: number) => workspaceApi.deleteApiKey(workspace!.id, keyId),
     onSuccess: () => {
       refetchKeys();
       toast({
@@ -184,7 +184,7 @@ export default function WorkspaceSettingsPage() {
     createKeyMutation.mutate(newKeyName);
   };
 
-  const handleDeleteKey = (keyId: string) => {
+  const handleDeleteKey = (keyId: number) => {
     if (!confirm("Are you sure you want to delete this API key? Applications using this key will stop working.")) {
       return;
     }

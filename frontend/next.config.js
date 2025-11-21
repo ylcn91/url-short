@@ -11,14 +11,8 @@ const nextConfig = {
     domains: ['localhost'],
   },
 
-  async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: process.env.NEXT_PUBLIC_API_URL + '/:path*',
-      },
-    ];
-  },
+  // Note: rewrites don't work with static export
+  // API calls will use NEXT_PUBLIC_API_URL directly from environment
 };
 
 module.exports = nextConfig;

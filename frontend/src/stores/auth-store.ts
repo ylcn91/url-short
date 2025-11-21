@@ -20,7 +20,7 @@ interface AuthState {
   setAuth: (data: AuthResponse) => void;
   clearAuth: () => void;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, name: string) => Promise<void>;
+  signup: (email: string, password: string, name: string, workspaceName: string, workspaceSlug: string) => Promise<void>;
   logout: () => void;
   loadAuthFromStorage: () => void;
   setWorkspace: (workspace: Workspace) => void;
@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({
       user: data.user,
       workspace: data.workspace,
-      token: data.token,
+      token: data.accessToken,
       isAuthenticated: true,
       error: null,
     });
@@ -64,7 +64,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({
         user: data.user,
         workspace: data.workspace,
-        token: data.token,
+        token: data.accessToken,
         isAuthenticated: true,
         isLoading: false,
         error: null,
@@ -78,15 +78,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signup: async (email: string, password: string, name: string) => {
+  signup: async (email: string, password: string, name: string, workspaceName: string, workspaceSlug: string) => {
     set({ isLoading: true, error: null });
     try {
-      const data = await authApi.signup({ email, password, name });
+      const data = await authApi.signup({ email, password, name, workspaceName, workspaceSlug });
       authStorage.saveAuth(data);
       set({
         user: data.user,
         workspace: data.workspace,
-        token: data.token,
+        token: data.accessToken,
         isAuthenticated: true,
         isLoading: false,
         error: null,
