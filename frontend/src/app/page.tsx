@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Link2,
   BarChart3,
@@ -17,6 +18,9 @@ import {
   CheckCircle2,
   ArrowRight,
   Star,
+  TrendingUp,
+  Target,
+  LayoutDashboard,
 } from "lucide-react";
 
 /**
@@ -46,6 +50,7 @@ export default function LandingPage() {
             </Link>
           </nav>
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link href="/login">
               <Button variant="ghost">Sign In</Button>
             </Link>
@@ -61,14 +66,17 @@ export default function LandingPage() {
         <Badge variant="secondary" className="px-4 py-1">
           Trusted by 10,000+ teams worldwide
         </Badge>
-        <h1 className="max-w-4xl text-center text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          Shorten URLs.
+        <h1 className="max-w-5xl text-center text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+          Connections start
           <br />
-          <span className="text-primary">Track Everything.</span>
+          with{" "}
+          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+            a link
+          </span>
         </h1>
-        <p className="max-w-2xl text-center text-lg text-muted-foreground sm:text-xl">
-          Create branded short links, track clicks in real-time, and gain insights into your audience.
-          Built for marketing teams, agencies, and businesses that value data.
+        <p className="max-w-3xl text-center text-lg text-muted-foreground sm:text-xl md:text-2xl">
+          Create powerful short links, track every click, and turn insights into action.
+          Trusted by marketing teams, developers, and businesses worldwide.
         </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link href="/signup">
@@ -114,8 +122,80 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="border-t py-16">
+        <div className="container">
+          <div className="grid gap-8 md:grid-cols-3 text-center">
+            <div>
+              <div className="text-4xl font-bold text-primary">500M+</div>
+              <div className="mt-2 text-sm text-muted-foreground">Links Created</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-primary">10K+</div>
+              <div className="mt-2 text-sm text-muted-foreground">Active Teams</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-primary">99.99%</div>
+              <div className="mt-2 text-sm text-muted-foreground">Uptime SLA</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Use Cases Section */}
+      <section className="border-t bg-muted/50 py-24">
+        <div className="container">
+          <div className="mx-auto max-w-2xl text-center mb-16">
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              Built for every use case
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              From marketing campaigns to developer workflows, URLShort adapts to your needs
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-3">
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Target className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="mt-4">For Marketers</CardTitle>
+                <CardDescription>
+                  Track campaign performance across channels with UTM parameters, custom domains, and real-time analytics.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Code className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="mt-4">For Developers</CardTitle>
+                <CardDescription>
+                  Integrate seamlessly with our RESTful API, webhooks, and comprehensive documentation for automated workflows.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="mt-4">For Teams</CardTitle>
+                <CardDescription>
+                  Collaborate effectively with team workspaces, role-based permissions, and centralized link management.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="border-t bg-muted/50 py-24">
+      <section id="features" className="border-t py-24">
         <div className="container">
           <div className="mx-auto max-w-2xl text-center mb-16">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
