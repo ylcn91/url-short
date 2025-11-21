@@ -1,11 +1,17 @@
 package com.urlshort.controller;
 
+import com.urlshort.domain.ClickEvent;
+import com.urlshort.domain.DeviceType;
+import com.urlshort.domain.ShortLink;
 import com.urlshort.dto.ClickEventDto;
 import com.urlshort.dto.ShortLinkResponse;
 import com.urlshort.event.ClickEventProducer;
 import com.urlshort.exception.LinkExpiredException;
 import com.urlshort.exception.ResourceNotFoundException;
+import com.urlshort.repository.ClickEventRepository;
+import com.urlshort.repository.ShortLinkRepository;
 import com.urlshort.service.ShortLinkService;
+import com.urlshort.util.UserAgentParser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -95,6 +101,12 @@ public class RedirectController {
 
     @Autowired
     private ShortLinkService shortLinkService;
+
+    @Autowired
+    private ClickEventRepository clickEventRepository;
+
+    @Autowired
+    private ShortLinkRepository shortLinkRepository;
 
     /**
      * Redirects a short code to its original URL.
@@ -278,26 +290,37 @@ public class RedirectController {
         try {
             log.debug("Recording click event: linkId={}, ip={}", shortLinkId, ipAddress);
 
-            // TODO: Implement click event recording
-            // This would typically:
-            // 1. Create a ClickEvent entity
-            // 2. Parse user agent to determine device type
-            // 3. Perform IP geolocation lookup for country/region
-            // 4. Save to database
-            // 5. Optionally publish to message queue for real-time analytics
-            //
-            // Example:
-            // ClickEvent event = ClickEvent.builder()
-            //     .shortLinkId(shortLinkId)
-            //     .ipAddress(ipAddress)
-            //     .userAgent(userAgent)
-            //     .referrer(referrer)
-            //     .deviceType(parseDeviceType(userAgent))
-            //     .country(geolocate(ipAddress))
-            //     .build();
-            // clickEventRepository.save(event);
+            // Fetch the ShortLink entity
+            ShortLink shortLink = shortLinkRepository.findById(shortLinkId)
+                .orElseThrow(() -> new ResourceNotFoundException("ShortLink not found with id: " + shortLinkId));
 
-            log.debug("Click event recorded successfully for linkId={}", shortLinkId);
+            // Parse user agent to extract browser, OS, and device type
+            UserAgentParser.ParseResult parseResult = UserAgentParser.parse(userAgent);
+
+            // TODO: Implement IP geolocation lookup for country/region
+            // For now, we'll leave country and city as null
+            // Consider integrating with services like MaxMind GeoIP2, IP-API, or ipapi
+            // Example: GeoIpService.lookup(ipAddress).getCountryCode()
+            String country = null;
+            String city = null;
+
+            // Create and save click event
+            ClickEvent event = ClickEvent.builder()
+                .shortLink(shortLink)
+                .ipAddress(ipAddress)
+                .userAgent(userAgent)
+                .referer(referrer)
+                .deviceType(parseResult.deviceType())
+                .browser(parseResult.browser())
+                .os(parseResult.os())
+                .country(country)
+                .city(city)
+                .build();
+
+            clickEventRepository.save(event);
+
+            log.debug("Click event recorded successfully for linkId={}: device={}, browser={}, os={}",
+                     shortLinkId, parseResult.deviceType(), parseResult.browser(), parseResult.os());
 
         } catch (Exception e) {
             // Log error but don't propagate - analytics failures shouldn't break redirects
