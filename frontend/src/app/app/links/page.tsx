@@ -172,7 +172,7 @@ export default function LinksPage() {
                 <div key={i} className="h-16 bg-muted animate-pulse rounded" />
               ))}
             </div>
-          ) : !data?.items || data.items.length === 0 ? (
+          ) : !data?.content || data.content.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground mb-4">
                 No links found. Create your first link to get started.
@@ -198,7 +198,7 @@ export default function LinksPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {data.items.map((link) => (
+                  {data.content.map((link) => (
                     <TableRow key={link.id}>
                       <TableCell>
                         <div className="flex flex-col gap-1">
@@ -295,7 +295,7 @@ export default function LinksPage() {
                 <div className="flex items-center justify-between mt-4">
                   <p className="text-sm text-muted-foreground">
                     Showing {(page - 1) * pageSize + 1} to{" "}
-                    {Math.min(page * pageSize, data.total)} of {data.total} links
+                    {Math.min(page * pageSize, data.totalElements)} of {data.totalElements} links
                   </p>
                   <div className="flex items-center gap-2">
                     <Button

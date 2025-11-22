@@ -138,12 +138,17 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+// Pagination types (matching Spring Data Page structure)
 export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
+  content: T[];           // Spring Data uses "content" not "items"
+  totalElements: number;  // Spring Data uses "totalElements" not "total"
+  number: number;         // Spring Data uses "number" for current page (0-indexed)
+  size: number;           // Spring Data uses "size" not "pageSize"
+  totalPages: number;     // Same in both
+  first: boolean;         // Additional Spring Data fields
+  last: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 
 export interface ErrorResponse {

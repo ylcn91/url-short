@@ -119,6 +119,33 @@ public interface ShortLinkService {
     ShortLinkResponse getShortLinkByUrl(Long workspaceId, String url);
 
     /**
+     * Updates an existing short link.
+     * <p>
+     * This method allows updating specific fields of a short link without changing others.
+     * Only the fields provided in the request will be updated. The original URL cannot be
+     * changed as it would affect the deterministic nature of the short code.
+     * </p>
+     *
+     * <h3>Example:</h3>
+     * <pre>{@code
+     * UpdateShortLinkRequest request = UpdateShortLinkRequest.builder()
+     *     .expiresAt(LocalDateTime.now().plusDays(60))
+     *     .maxClicks(2000)
+     *     .isActive(true)
+     *     .build();
+     *
+     * ShortLinkResponse updated = service.updateShortLink(workspaceId, linkId, request);
+     * }</pre>
+     *
+     * @param workspaceId the workspace ID
+     * @param linkId      the ID of the link to update
+     * @param request     update request with fields to change
+     * @return updated short link response
+     * @throws com.urlshort.exception.ResourceNotFoundException if link not found
+     */
+    ShortLinkResponse updateShortLink(Long workspaceId, Long linkId, UpdateShortLinkRequest request);
+
+    /**
      * Deletes a short link (soft delete).
      * <p>
      * This method marks the link as deleted without removing it from the database.

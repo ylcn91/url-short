@@ -6,6 +6,7 @@ import com.urlshort.dto.*;
 import com.urlshort.exception.ResourceNotFoundException;
 import com.urlshort.repository.UserRepository;
 import com.urlshort.repository.WorkspaceRepository;
+import com.urlshort.security.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -173,7 +174,7 @@ public class WorkspaceController {
         // SecurityContext context = SecurityContextHolder.getContext();
         // CustomUserPrincipal principal = (CustomUserPrincipal) context.getAuthentication().getPrincipal();
         // Long workspaceId = principal.getWorkspaceId();
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         Workspace workspace = workspaceRepository.findById(workspaceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Workspace not found with id: " + workspaceId));

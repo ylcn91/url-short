@@ -1,6 +1,7 @@
 package com.urlshort.controller;
 
 import com.urlshort.dto.*;
+import com.urlshort.security.SecurityUtils;
 import com.urlshort.service.ShortLinkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -156,9 +157,8 @@ public class ShortLinkController {
 
         log.info("POST /api/v1/links - Creating short link for URL: {}", request.getOriginalUrl());
 
-        // TODO: Extract workspace ID from security context (JWT claims)
-        // For now, using a placeholder workspace ID
-        Long workspaceId = 1L; // SecurityContextHolder.getContext().getAuthentication().getPrincipal().getWorkspaceId();
+        // Extract workspace ID from JWT claims via SecurityContext
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         ShortLinkResponse response = shortLinkService.createShortLink(workspaceId, request);
 
@@ -249,7 +249,7 @@ public class ShortLinkController {
                  page, size, sortBy, sortDirection);
 
         // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         // Ensure page size doesn't exceed max limit
         size = Math.min(size, 100);
@@ -321,7 +321,7 @@ public class ShortLinkController {
         log.info("GET /api/v1/links/{} - Retrieving link by ID", id);
 
         // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         // Note: This is a simplified implementation. In production, you'd have a getById method
         // For now, we'll use listShortLinks and filter, or add a new service method
@@ -384,7 +384,7 @@ public class ShortLinkController {
         log.info("GET /api/v1/links/code/{} - Retrieving link by code", code);
 
         // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         ShortLinkResponse response = shortLinkService.getShortLink(workspaceId, code);
 
@@ -449,15 +449,13 @@ public class ShortLinkController {
 
         log.info("PATCH /api/v1/links/{} - Updating link settings", id);
 
-        // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
-        // TODO: Implement update logic in service layer
-        // shortLinkService.updateShortLink(workspaceId, id, request);
+        ShortLinkResponse response = shortLinkService.updateShortLink(workspaceId, id, request);
 
-        log.info("Short link updated successfully: id={}", id);
+        log.info("Short link updated successfully: id={}, code={}", id, response.shortCode());
 
-        return ResponseEntity.ok(ApiResponse.success("Short link updated successfully"));
+        return ResponseEntity.ok(ApiResponse.success(response, "Short link updated successfully"));
     }
 
     /**
@@ -511,7 +509,7 @@ public class ShortLinkController {
         log.info("DELETE /api/v1/links/{} - Deleting link", id);
 
         // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         shortLinkService.deleteShortLink(workspaceId, id);
 
@@ -596,7 +594,7 @@ public class ShortLinkController {
         log.info("GET /api/v1/links/{}/stats - Retrieving link analytics", id);
 
         // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         // TODO: First get the link to retrieve its short code, then get stats
         // For now, this is a simplified implementation
@@ -675,7 +673,7 @@ public class ShortLinkController {
         log.info("POST /api/v1/links/bulk - Bulk creating {} short links", request.getUrls().size());
 
         // TODO: Extract workspace ID from security context
-        Long workspaceId = 1L;
+        Long workspaceId = SecurityUtils.getWorkspaceIdFromAuth();
 
         List<ShortLinkResponse> responses = new ArrayList<>();
 

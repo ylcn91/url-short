@@ -6,6 +6,7 @@ import com.urlshort.domain.Workspace;
 import com.urlshort.dto.CreateShortLinkRequest;
 import com.urlshort.dto.LinkStatsResponse;
 import com.urlshort.dto.ShortLinkResponse;
+import com.urlshort.dto.UpdateShortLinkRequest;
 import com.urlshort.exception.InvalidUrlException;
 import com.urlshort.exception.LinkExpiredException;
 import com.urlshort.exception.ResourceNotFoundException;
@@ -340,6 +341,82 @@ public class ShortLinkServiceImpl implements ShortLinkService {
      * @param linkId      the link ID to delete
      * @throws ResourceNotFoundException if link not found
      */
+    @Override
+    @Transactional
+    public ShortLinkResponse updateShortLink(Long workspaceId, Long linkId, UpdateShortLinkRequest request) {
+        log.info("Updating short link: workspace={}, linkId={}", workspaceId, linkId);
+
+        // Find and verify link exists and belongs to workspace
+        ShortLink link = shortLinkRepository.findById(linkId)
+            .orElseThrow(() -> new ResourceNotFoundException("Short link not found with id: " + linkId));
+
+        // Verify link belongs to the workspace
+        if (!link.getWorkspace().getId().equals(workspaceId)) {
+            log.warn("Attempted to update link {} from wrong workspace. Expected: {}, Got: {}",
+                     linkId, link.getWorkspace().getId(), workspaceId);
+            throw new ResourceNotFoundException("Short link not found in workspace " + workspaceId);
+        }
+
+        // Verify link is not deleted
+        if (link.getIsDeleted()) {
+            throw new ResourceNotFoundException("Cannot update a deleted short link");
+        }
+
+        // Track what fields are being updated
+        List<String> updatedFields = new ArrayList<>();
+
+        // Update originalUrl if provided
+        // Note: Changing the original URL breaks the deterministic nature,
+        // but we allow it for flexibility. The short code remains the same.
+        if (request.getOriginalUrl() != null && !request.getOriginalUrl().isBlank()) {
+            String newNormalizedUrl = UrlCanonicalizer.canonicalize(request.getOriginalUrl());
+            if (!newNormalizedUrl.equals(link.getNormalizedUrl())) {
+                log.info("Updating original URL for link {}: {} -> {}",
+                         linkId, link.getOriginalUrl(), request.getOriginalUrl());
+                link.setOriginalUrl(request.getOriginalUrl());
+                link.setNormalizedUrl(newNormalizedUrl);
+                updatedFields.add("originalUrl");
+            }
+        }
+
+        // Update expiresAt if provided
+        if (request.getExpiresAt() != null) {
+            log.debug("Updating expiration for link {}: {} -> {}",
+                      linkId, link.getExpiresAt(), request.getExpiresAt());
+            link.setExpiresAt(request.getExpiresAt());
+            updatedFields.add("expiresAt");
+        }
+
+        // Update maxClicks if provided
+        if (request.getMaxClicks() != null) {
+            log.debug("Updating max clicks for link {}: {} -> {}",
+                      linkId, link.getMaxClicks(), request.getMaxClicks());
+            link.setMaxClicks(request.getMaxClicks());
+            updatedFields.add("maxClicks");
+        }
+
+        // Update isActive if provided
+        if (request.getIsActive() != null) {
+            log.debug("Updating active status for link {}: {} -> {}",
+                      linkId, link.getIsActive(), request.getIsActive());
+            link.setIsActive(request.getIsActive());
+            updatedFields.add("isActive");
+        }
+
+        // If no fields were updated, return current state
+        if (updatedFields.isEmpty()) {
+            log.info("No fields to update for link {}", linkId);
+            return toResponse(link);
+        }
+
+        // Save the updated link
+        ShortLink updatedLink = shortLinkRepository.save(link);
+
+        log.info("Successfully updated short link {}: fields={}", linkId, String.join(", ", updatedFields));
+
+        return toResponse(updatedLink);
+    }
+
     @Override
     @Transactional
     public void deleteShortLink(Long workspaceId, Long linkId) {

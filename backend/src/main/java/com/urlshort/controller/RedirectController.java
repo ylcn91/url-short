@@ -10,6 +10,7 @@ import com.urlshort.exception.LinkExpiredException;
 import com.urlshort.exception.ResourceNotFoundException;
 import com.urlshort.repository.ClickEventRepository;
 import com.urlshort.repository.ShortLinkRepository;
+import com.urlshort.security.SecurityUtils;
 import com.urlshort.service.ShortLinkService;
 import com.urlshort.util.UserAgentParser;
 import io.swagger.v3.oas.annotations.Operation;
