@@ -20,6 +20,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -106,9 +107,9 @@ public class LinkHealthServiceImpl implements LinkHealthService {
     @Override
     @Transactional(readOnly = true)
     public List<LinkHealthResponse> getUnhealthyLinks(Long workspaceId) {
-        List<LinkHealth> unhealthyLinks = healthRepository.findByWorkspaceIdAndStatus(workspaceId, "UNHEALTHY");
-        unhealthyLinks.addAll(healthRepository.findByWorkspaceIdAndStatus(workspaceId, "DOWN"));
-        unhealthyLinks.addAll(healthRepository.findByWorkspaceIdAndStatus(workspaceId, "DEGRADED"));
+        List<LinkHealth> unhealthyLinks = new ArrayList<>(healthRepository.findByWorkspaceIdAndStatus(workspaceId, LinkHealth.HealthStatus.UNHEALTHY));
+        unhealthyLinks.addAll(healthRepository.findByWorkspaceIdAndStatus(workspaceId, LinkHealth.HealthStatus.DOWN));
+        unhealthyLinks.addAll(healthRepository.findByWorkspaceIdAndStatus(workspaceId, LinkHealth.HealthStatus.DEGRADED));
 
         return unhealthyLinks.stream()
                 .map(this::toResponse)
@@ -156,22 +157,22 @@ public class LinkHealthServiceImpl implements LinkHealthService {
 
             // Determine status based on response time
             if (result.getResponseTimeMs() < 1000) {
-                health.setStatus("HEALTHY");
+                health.setStatus(LinkHealth.HealthStatus.HEALTHY);
             } else if (result.getResponseTimeMs() < 3000) {
-                health.setStatus("DEGRADED");
+                health.setStatus(LinkHealth.HealthStatus.DEGRADED);
             } else {
-                health.setStatus("UNHEALTHY");
+                health.setStatus(LinkHealth.HealthStatus.UNHEALTHY);
             }
         } else {
             health.setConsecutiveFailures(health.getConsecutiveFailures() + 1);
 
             // Determine status based on consecutive failures
             if (health.getConsecutiveFailures() >= 5) {
-                health.setStatus("DOWN");
+                health.setStatus(LinkHealth.HealthStatus.DOWN);
             } else if (health.getConsecutiveFailures() >= 3) {
-                health.setStatus("UNHEALTHY");
+                health.setStatus(LinkHealth.HealthStatus.UNHEALTHY);
             } else {
-                health.setStatus("DEGRADED");
+                health.setStatus(LinkHealth.HealthStatus.DEGRADED);
             }
         }
 
@@ -184,7 +185,7 @@ public class LinkHealthServiceImpl implements LinkHealthService {
     public void resetHealth(Long shortLinkId) {
         log.info("Resetting health for link {}", shortLinkId);
         healthRepository.findByShortLinkId(shortLinkId).ifPresent(health -> {
-            health.setStatus("UNKNOWN");
+            health.setStatus(LinkHealth.HealthStatus.UNKNOWN);
             health.setConsecutiveFailures(0);
             healthRepository.save(health);
         });
@@ -196,7 +197,7 @@ public class LinkHealthServiceImpl implements LinkHealthService {
 
         return LinkHealth.builder()
                 .shortLink(shortLink)
-                .status("UNKNOWN")
+                .status(LinkHealth.HealthStatus.UNKNOWN)
                 .consecutiveFailures(0)
                 .checkCount(0L)
                 .successCount(0L)
@@ -207,7 +208,7 @@ public class LinkHealthServiceImpl implements LinkHealthService {
         return LinkHealthResponse.builder()
                 .id(health.getId())
                 .shortLinkId(health.getShortLink().getId())
-                .status(health.getStatus())
+                .status(health.getStatus().name())
                 .lastStatusCode(health.getLastStatusCode())
                 .lastResponseTimeMs(health.getLastResponseTimeMs())
                 .lastError(health.getLastError())

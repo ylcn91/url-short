@@ -82,6 +82,10 @@ public class ApiKey {
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
+    @Builder.Default
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Builder.Default
     @Column(columnDefinition = "jsonb", nullable = false)

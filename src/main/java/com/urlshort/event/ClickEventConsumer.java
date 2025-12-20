@@ -43,6 +43,7 @@ public class ClickEventConsumer {
 
     private final ClickEventRepository clickEventRepository;
     private final ShortLinkRepository shortLinkRepository;
+    private final MeterRegistry meterRegistry;
     private final Counter consumedCounter;
     private final Counter errorCounter;
     private final Timer processingTimer;
@@ -54,6 +55,7 @@ public class ClickEventConsumer {
     ) {
         this.clickEventRepository = clickEventRepository;
         this.shortLinkRepository = shortLinkRepository;
+        this.meterRegistry = meterRegistry;
 
         // Initialize metrics
         this.consumedCounter = Counter.builder("kafka.click.events.consumed")
@@ -289,7 +291,7 @@ public class ClickEventConsumer {
         // Increment DLQ metric for alerting
         Counter.builder("kafka.click.events.dlq.count")
                 .description("Number of click events in dead-letter queue")
-                .register(processingTimer.getId().getMeterRegistry())
+                .register(meterRegistry)
                 .increment();
 
         // TODO: Consider persisting to a failed_events table for manual review

@@ -55,7 +55,7 @@ public class CustomDomainServiceImpl implements CustomDomainService {
         CustomDomain domain = CustomDomain.builder()
                 .workspace(workspace)
                 .domain(request.getDomain())
-                .status("PENDING")
+                .status(CustomDomain.DomainStatus.PENDING)
                 .verificationToken(verificationToken)
                 .useHttps(request.getUseHttps() != null ? request.getUseHttps() : true)
                 .isDefault(false)
@@ -80,12 +80,12 @@ public class CustomDomainServiceImpl implements CustomDomainService {
         boolean verified = performDnsVerification(domain.getDomain(), domain.getVerificationToken());
 
         if (verified) {
-            domain.setStatus("VERIFIED");
+            domain.setStatus(CustomDomain.DomainStatus.VERIFIED);
             domain.setVerifiedAt(LocalDateTime.now());
             domainRepository.save(domain);
             log.info("Domain {} verified successfully", domain.getDomain());
         } else {
-            domain.setStatus("FAILED");
+            domain.setStatus(CustomDomain.DomainStatus.FAILED);
             domainRepository.save(domain);
             log.warn("Domain {} verification failed", domain.getDomain());
         }
@@ -93,7 +93,7 @@ public class CustomDomainServiceImpl implements CustomDomainService {
         return DomainVerificationResponse.builder()
                 .verified(verified)
                 .domain(domain.getDomain())
-                .status(domain.getStatus())
+                .status(domain.getStatus().name())
                 .message(verified ? "Domain verified successfully" : "Verification failed - TXT record not found")
                 .build();
     }
@@ -106,7 +106,7 @@ public class CustomDomainServiceImpl implements CustomDomainService {
         CustomDomain domain = domainRepository.findById(domainId)
                 .orElseThrow(() -> new ResourceNotFoundException("Domain not found"));
 
-        if (!"VERIFIED".equals(domain.getStatus())) {
+        if (domain.getStatus() != CustomDomain.DomainStatus.VERIFIED) {
             throw new IllegalStateException("Only verified domains can be set as default");
         }
 
@@ -165,7 +165,7 @@ public class CustomDomainServiceImpl implements CustomDomainService {
         return CustomDomainResponse.builder()
                 .id(domain.getId())
                 .domain(domain.getDomain())
-                .status(domain.getStatus())
+                .status(domain.getStatus().name())
                 .verificationToken(domain.getVerificationToken())
                 .verifiedAt(domain.getVerifiedAt())
                 .useHttps(domain.getUseHttps())

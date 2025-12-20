@@ -33,7 +33,11 @@ public record ErrorResponse(
         @Schema(description = "Validation errors mapped by field name",
                 example = "{\"originalUrl\": \"Must be a valid URL\", \"customCode\": \"Custom code already exists\"}")
         @JsonProperty("validation_errors")
-        Map<String, String> validationErrors
+        Map<String, String> validationErrors,
+
+        @Schema(description = "Unique request identifier for tracing", example = "550e8400-e29b-41d4-a716-446655440000")
+        @JsonProperty("request_id")
+        String requestId
 ) {
     /**
      * Builder pattern for ErrorResponse.
@@ -49,6 +53,7 @@ public record ErrorResponse(
         private String message;
         private String path;
         private Map<String, String> validationErrors;
+        private String requestId;
 
         public Builder timestamp(LocalDateTime timestamp) {
             this.timestamp = timestamp;
@@ -80,8 +85,13 @@ public record ErrorResponse(
             return this;
         }
 
+        public Builder requestId(String requestId) {
+            this.requestId = requestId;
+            return this;
+        }
+
         public ErrorResponse build() {
-            return new ErrorResponse(timestamp, status, error, message, path, validationErrors);
+            return new ErrorResponse(timestamp, status, error, message, path, validationErrors, requestId);
         }
     }
 }

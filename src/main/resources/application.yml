@@ -9,26 +9,25 @@ spring:
   cache:
     type: redis
     redis:
-      time-to-live: 3600000 # 1 hour default
+      time-to-live: 3600000
       use-key-prefix: true
-      key-prefix: cache:
+      key-prefix: 'cache:'
 
   # Redis Configuration (default)
-  redis:
-    enabled: true
-    host: localhost
-    port: 6379
-    password: ""
-    timeout: 2000
-    database: 0
-    ssl: false
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
-      shutdown-timeout: 2000ms
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ""
+      timeout: 2000ms
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1ms
+        shutdown-timeout: 2000ms
 
   jpa:
     open-in-view: false
@@ -106,8 +105,8 @@ logging:
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-please-make-it-long-enough}
-  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
-  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
+  expiration: ${JWT_EXPIRATION:86400000}
+  refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
 
 # Rate Limiting Configuration
 app:
@@ -126,8 +125,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://localhost:5432/urlshortener_dev
-    username: postgres
-    password: postgres
+    username: yalcindoksanbir
+    password: "6161"
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -137,38 +136,41 @@ spring:
       max-lifetime: 1800000
 
   # Development Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 2
+          max-wait: -1ms
+
   redis:
     enabled: true
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 2000
-    database: 0
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 2
-        max-wait: -1ms
 
   # Development Cache Configuration
   cache:
     type: redis
     redis:
-      time-to-live: 3600000 # 1 hour default
+      time-to-live: 3600000
       use-key-prefix: true
-      key-prefix: cache:dev:
+      key-prefix: 'cache:dev:'
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create-drop
     show-sql: true
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
-    enabled: true
+    enabled: false
     clean-disabled: false
 
   # Development Kafka Configuration
@@ -257,21 +259,25 @@ spring:
       leak-detection-threshold: 60000
 
   # Production Redis Configuration - High Availability
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3000ms
+      database: 0
+      ssl:
+        enabled: ${REDIS_SSL:false}
+      lettuce:
+        pool:
+          max-active: 32
+          max-idle: 16
+          min-idle: 8
+          max-wait: -1ms
+        shutdown-timeout: 3000ms
+
   redis:
     enabled: true
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    timeout: 3000
-    database: 0
-    ssl: ${REDIS_SSL:false}
-    lettuce:
-      pool:
-        max-active: 32
-        max-idle: 16
-        min-idle: 8
-        max-wait: -1ms
-      shutdown-timeout: 3000ms
 
   # Production Cache Configuration - Optimized for high traffic
   cache:
@@ -279,7 +285,7 @@ spring:
     redis:
       time-to-live: 3600000 # 1 hour default
       use-key-prefix: true
-      key-prefix: cache:prod:
+      key-prefix: 'cache:prod:'
 
   jpa:
     hibernate:

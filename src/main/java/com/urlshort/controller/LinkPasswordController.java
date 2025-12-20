@@ -50,7 +50,7 @@ public class LinkPasswordController {
 
         if (!response.getValid()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(ApiResponse.error("Invalid password", null));
+                    .body(ApiResponse.error("Invalid password"));
         }
 
         return ResponseEntity.ok(ApiResponse.success(response));

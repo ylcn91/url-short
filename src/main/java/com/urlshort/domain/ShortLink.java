@@ -103,6 +103,10 @@ public class ShortLink {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    @Min(value = 1, message = "Max clicks must be at least 1")
+    @Column(name = "max_clicks")
+    private Long maxClicks;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Builder.Default
     @Column(columnDefinition = "jsonb", nullable = false)
@@ -135,12 +139,21 @@ public class ShortLink {
     }
 
     /**
-     * Check if the link is currently usable (active and not expired).
+     * Check if the link is currently usable (active, not expired, and not exceeded max clicks).
      *
      * @return true if the link can be used
      */
     public boolean isUsable() {
-        return isActive && !isDeleted && !isExpired();
+        return isActive && !isDeleted && !isExpired() && !hasReachedMaxClicks();
+    }
+
+    /**
+     * Check if the link has reached its maximum allowed clicks.
+     *
+     * @return true if max clicks limit is set and has been reached
+     */
+    public boolean hasReachedMaxClicks() {
+        return maxClicks != null && clickCount >= maxClicks;
     }
 
     /**

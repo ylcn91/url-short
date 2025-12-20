@@ -37,7 +37,7 @@ public interface ClickEventRepository extends JpaRepository<ClickEvent, Long> {
      * @param linkId the short link ID
      * @return list of maps with date and click count for each day
      */
-    @Query("SELECT new map(DATE(ce.clickedAt) as date, COUNT(ce) as count) FROM ClickEvent ce WHERE ce.shortLinkId = :linkId GROUP BY DATE(ce.clickedAt)")
+    @Query("SELECT new map(DATE(ce.clickedAt) as date, COUNT(ce) as count) FROM ClickEvent ce WHERE ce.shortLink.id = :linkId GROUP BY DATE(ce.clickedAt)")
     List<Map<String, Object>> findClicksByDate(@Param("linkId") Long linkId);
 
     /**
@@ -52,6 +52,6 @@ public interface ClickEventRepository extends JpaRepository<ClickEvent, Long> {
      * @param linkId the short link ID
      * @return list of maps with country code and click count for each country
      */
-    @Query("SELECT new map(ce.country as country, COUNT(ce) as count) FROM ClickEvent ce WHERE ce.shortLinkId = :linkId GROUP BY ce.country")
+    @Query("SELECT new map(ce.country as country, COUNT(ce) as count) FROM ClickEvent ce WHERE ce.shortLink.id = :linkId GROUP BY ce.country")
     List<Map<String, Object>> findClicksByCountry(@Param("linkId") Long linkId);
 }

@@ -40,4 +40,11 @@ public class HealthCheckResult {
     @Schema(description = "When check was performed")
     @JsonProperty("checked_at")
     private LocalDateTime checkedAt;
+
+    /**
+     * Check if link is healthy.
+     */
+    public boolean isHealthy() {
+        return Boolean.TRUE.equals(healthy);
+    }
 }

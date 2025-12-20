@@ -85,8 +85,7 @@ public class CacheConfig {
         // Short links cache: 1 hour TTL with hot path optimization
         RedisCacheConfiguration shortLinksConfig = RedisCacheConfiguration.defaultCacheConfig()
                 .entryTtl(Duration.ofSeconds(SHORT_LINK_TTL_SECONDS))
-                .disableCachingNullValues()
-                .computeIfAbsent(true);
+                .disableCachingNullValues();
 
         log.debug("Short links cache configured with TTL: {} seconds", SHORT_LINK_TTL_SECONDS);
 

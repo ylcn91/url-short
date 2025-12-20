@@ -1,6 +1,7 @@
 package com.urlshort.repository;
 
 import com.urlshort.domain.LinkHealth;
+import com.urlshort.domain.LinkHealth.HealthStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -49,7 +50,7 @@ public interface LinkHealthRepository extends JpaRepository<LinkHealth, Long> {
      * @return list of unhealthy links
      */
     @Query("SELECT lh FROM LinkHealth lh WHERE lh.shortLink.workspace.id = :workspaceId AND lh.status = :status")
-    List<LinkHealth> findByWorkspaceIdAndStatus(@Param("workspaceId") Long workspaceId, @Param("status") String status);
+    List<LinkHealth> findByWorkspaceIdAndStatus(@Param("workspaceId") Long workspaceId, @Param("status") HealthStatus status);
 
     /**
      * Counts unhealthy links for a workspace.
