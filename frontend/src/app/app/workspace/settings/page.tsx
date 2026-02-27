@@ -6,7 +6,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import {
-  Settings,
   Save,
   Key,
   Plus,
@@ -22,6 +21,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layouts/page-header";
 import {
   Table,
   TableBody,
@@ -53,6 +55,21 @@ const workspaceSchema = z.object({
 });
 
 type WorkspaceFormData = z.infer<typeof workspaceSchema>;
+
+function getPlanBadgeVariant(plan: string): "secondary" | "default" | "success" | "warning" {
+  switch (plan) {
+    case "FREE":
+      return "secondary";
+    case "PRO":
+      return "default";
+    case "TEAM":
+      return "success";
+    case "ENTERPRISE":
+      return "warning";
+    default:
+      return "secondary";
+  }
+}
 
 /**
  * Workspace Settings Page
@@ -204,12 +221,30 @@ export default function WorkspaceSettingsPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+        <PageHeader
+          title="Workspace Settings"
+          description="Manage your workspace configuration and API access"
+        />
         <Card>
-          <CardHeader className="animate-pulse">
-            <div className="h-6 w-32 bg-muted rounded" />
-            <div className="h-4 w-64 bg-muted rounded mt-2" />
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-64 mt-2" />
           </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-1/2" />
+          </CardContent>
+        </Card>
+        <Separator />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-32 w-full" />
+          </CardContent>
         </Card>
       </div>
     );
@@ -217,16 +252,10 @@ export default function WorkspaceSettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <Settings className="h-8 w-8" />
-          Workspace Settings
-        </h1>
-        <p className="text-muted-foreground">
-          Manage your workspace configuration and API access
-        </p>
-      </div>
+      <PageHeader
+        title="Workspace Settings"
+        description="Manage your workspace configuration and API access"
+      />
 
       {/* General Settings */}
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -257,7 +286,10 @@ export default function WorkspaceSettingsPage() {
             <div className="space-y-2">
               <Label>Current Plan</Label>
               <div>
-                <Badge variant="default" className="text-base px-3 py-1">
+                <Badge
+                  variant={getPlanBadgeVariant(workspaceData?.plan || "FREE")}
+                  className="text-base px-3 py-1"
+                >
                   {workspaceData?.plan || "FREE"}
                 </Badge>
               </div>
@@ -276,6 +308,8 @@ export default function WorkspaceSettingsPage() {
               </p>
             </div>
 
+            <Separator />
+
             {/* Allow Custom Slugs */}
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
@@ -292,6 +326,8 @@ export default function WorkspaceSettingsPage() {
                 onCheckedChange={(checked) => setValue("allowCustomSlugs", checked)}
               />
             </div>
+
+            <Separator />
 
             {/* Require Authentication */}
             <div className="flex items-center justify-between">
@@ -334,6 +370,8 @@ export default function WorkspaceSettingsPage() {
           </CardContent>
         </Card>
       </form>
+
+      <Separator />
 
       {/* API Keys */}
       <Card>

@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
@@ -44,28 +44,24 @@ export default function LinkDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const linkId = Number(params.id);
 
-  const [dateRange, setDateRange] = React.useState({
+  const [dateRange] = React.useState({
     startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
     endDate: new Date().toISOString().split("T")[0],
   });
 
-  // Fetch link details
   const { data: link, isLoading: linkLoading } = useQuery({
     queryKey: ["link", linkId],
     queryFn: () => linksApi.getLink(linkId),
   });
 
-  // Fetch analytics
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["link-stats", linkId, dateRange],
     queryFn: () => analyticsApi.getLinkStats(linkId, dateRange),
     enabled: !!link,
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: () => linksApi.deleteLink(linkId),
     onSuccess: () => {
@@ -207,7 +203,6 @@ export default function LinkDetailPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Short URL */}
           <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Short URL</p>
@@ -217,14 +212,13 @@ export default function LinkDetailPage() {
             </div>
             <div className="flex items-center gap-2">
               <a href={shortUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="ghost" size="sm">
+                <Button variant="ghost" size="sm" aria-label="Open short link">
                   <ExternalLink className="h-4 w-4" />
                 </Button>
               </a>
-              {/* QR Code Dialog */}
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" aria-label="Show QR code">
                     <QrCode className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
@@ -244,7 +238,6 @@ export default function LinkDetailPage() {
             </div>
           </div>
 
-          {/* Original URL */}
           <div className="space-y-1">
             <p className="text-xs text-muted-foreground">Original URL</p>
             <a
@@ -258,7 +251,6 @@ export default function LinkDetailPage() {
             </a>
           </div>
 
-          {/* Metadata */}
           <div className="flex flex-wrap gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -294,50 +286,39 @@ export default function LinkDetailPage() {
             <MousePointerClick className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(stats?.totalClicks || 0)}
-            </div>
+            <div className="text-2xl font-bold">{formatNumber(stats?.totalClicks || 0)}</div>
             <p className="text-xs text-muted-foreground">All-time clicks</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Unique Visitors</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(stats?.uniqueVisitors || 0)}
-            </div>
+            <div className="text-2xl font-bold">{formatNumber(stats?.uniqueVisitors || 0)}</div>
             <p className="text-xs text-muted-foreground">Unique visitors</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Top Country</CardTitle>
             <Globe className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.clicksByCountry?.[0]?.country || "N/A"}
-            </div>
+            <div className="text-2xl font-bold">{stats?.clicksByCountry?.[0]?.country || "N/A"}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.clicksByCountry?.[0]?.percentage.toFixed(1) || 0}% of clicks
             </p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Top Device</CardTitle>
             <Smartphone className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {stats?.clicksByDevice?.[0]?.deviceType || "N/A"}
-            </div>
+            <div className="text-2xl font-bold">{stats?.clicksByDevice?.[0]?.deviceType || "N/A"}</div>
             <p className="text-xs text-muted-foreground">
               {stats?.clicksByDevice?.[0]?.percentage.toFixed(1) || 0}% of clicks
             </p>
@@ -354,24 +335,14 @@ export default function LinkDetailPage() {
                 <BarChart3 className="h-5 w-5" />
                 Analytics
               </CardTitle>
-              <CardDescription>
-                Detailed insights into link performance
-              </CardDescription>
+              <CardDescription>Detailed insights into link performance</CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExportData("csv")}
-              >
+              <Button variant="outline" size="sm" onClick={() => handleExportData("csv")}>
                 <Download className="h-4 w-4 mr-2" />
                 Export CSV
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExportData("json")}
-              >
+              <Button variant="outline" size="sm" onClick={() => handleExportData("json")}>
                 <Download className="h-4 w-4 mr-2" />
                 Export JSON
               </Button>
@@ -397,28 +368,24 @@ export default function LinkDetailPage() {
                 <TabsTrigger value="locations">Locations</TabsTrigger>
                 <TabsTrigger value="referrers">Referrers</TabsTrigger>
               </TabsList>
-
               <TabsContent value="overview" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Click Trends</h3>
                   <ClickChart data={stats.clicksByDate || []} variant="area" />
                 </div>
               </TabsContent>
-
               <TabsContent value="devices" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Device Distribution</h3>
                   <DeviceChart data={stats.clicksByDevice || []} />
                 </div>
               </TabsContent>
-
               <TabsContent value="locations" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Top Countries</h3>
                   <LocationChart data={stats.clicksByCountry || []} />
                 </div>
               </TabsContent>
-
               <TabsContent value="referrers" className="space-y-4">
                 <div>
                   <h3 className="text-lg font-semibold mb-4">Traffic Sources</h3>

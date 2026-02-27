@@ -1,18 +1,18 @@
 /** @type {import('next').NextConfig} */
+const isGitHubPages = process.env.GITHUB_PAGES === 'true';
+
 const nextConfig = {
   reactStrictMode: true,
 
-  // GitHub Pages configuration
-  output: 'export',
-  basePath: process.env.NODE_ENV === 'production' ? '/url-short' : '',
+  // Static export only for GitHub Pages deployment
+  ...(isGitHubPages && { output: 'export' }),
+
+  basePath: isGitHubPages ? '/url-short' : '',
 
   images: {
-    unoptimized: true, // Required for static export
+    unoptimized: true,
     domains: ['localhost'],
   },
-
-  // Note: rewrites don't work with static export
-  // API calls will use NEXT_PUBLIC_API_URL directly from environment
 };
 
 module.exports = nextConfig;

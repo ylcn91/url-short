@@ -11,12 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/stores/auth-store";
 
 // Form validation schemas
 const profileSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
+  fullName: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
 });
 
@@ -40,6 +44,15 @@ const passwordSchema = z
 type ProfileFormData = z.infer<typeof profileSchema>;
 type PasswordFormData = z.infer<typeof passwordSchema>;
 
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}
+
 /**
  * Account Settings Page
  * Manage user profile, email, and password
@@ -56,7 +69,7 @@ export default function AccountPage() {
   const profileForm = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: user?.name || "",
+      fullName: user?.fullName || "",
       email: user?.email || "",
     },
   });
@@ -122,16 +135,30 @@ export default function AccountPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-          <User className="h-8 w-8" />
-          Account Settings
-        </h1>
-        <p className="text-muted-foreground">
-          Manage your personal account information and security
-        </p>
-      </div>
+      <PageHeader
+        title="Account Settings"
+        description="Manage your personal account information and security"
+      />
+
+      {/* Avatar Header Card */}
+      <Card>
+        <CardContent className="flex items-center gap-6 p-6">
+          <Avatar className="h-20 w-20">
+            <AvatarFallback className="text-2xl font-semibold">
+              {user ? getInitials(user.fullName) : "??"}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h2 className="text-xl font-semibold">{user?.fullName || "User"}</h2>
+            <p className="text-sm text-muted-foreground">{user?.email || ""}</p>
+            <Badge variant="secondary" className="mt-2">
+              {user?.role || "USER"}
+            </Badge>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Separator />
 
       {/* Profile Information */}
       <Card>
@@ -153,12 +180,12 @@ export default function AccountPage() {
               </Label>
               <Input
                 id="name"
-                {...profileForm.register("name")}
-                aria-invalid={profileForm.formState.errors.name ? "true" : "false"}
+                {...profileForm.register("fullName")}
+                aria-invalid={profileForm.formState.errors.fullName ? "true" : "false"}
               />
-              {profileForm.formState.errors.name && (
+              {profileForm.formState.errors.fullName && (
                 <p className="text-sm text-destructive">
-                  {profileForm.formState.errors.name.message}
+                  {profileForm.formState.errors.fullName.message}
                 </p>
               )}
             </div>
@@ -182,16 +209,6 @@ export default function AccountPage() {
               )}
             </div>
 
-            {/* User Role */}
-            <div className="space-y-2">
-              <Label>Role</Label>
-              <div>
-                <span className="text-sm font-medium px-2 py-1 rounded-md bg-muted">
-                  {user?.role || "USER"}
-                </span>
-              </div>
-            </div>
-
             {/* Save Button */}
             <div className="flex justify-end pt-4 border-t">
               <Button type="submit" disabled={isUpdatingProfile}>
@@ -211,6 +228,8 @@ export default function AccountPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Separator />
 
       {/* Password */}
       <Card>
@@ -307,6 +326,8 @@ export default function AccountPage() {
           </form>
         </CardContent>
       </Card>
+
+      <Separator />
 
       {/* Account Actions */}
       <Card>

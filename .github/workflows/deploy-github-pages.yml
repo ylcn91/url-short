@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - claude/continue-project-016WT5VJDek91FBQqkhVwbPZ
     paths:
       - 'frontend/**'
       - '.github/workflows/deploy-github-pages.yml'
@@ -38,11 +37,16 @@ jobs:
         working-directory: ./frontend
         run: npm ci
 
+      - name: Remove dynamic routes for static export
+        working-directory: ./frontend
+        run: rm -rf src/app/app/links/\[id\]
+
       - name: Build Next.js site
         working-directory: ./frontend
         run: npm run build
         env:
           NODE_ENV: production
+          GITHUB_PAGES: 'true'
           NEXT_PUBLIC_API_URL: https://api.linkforge.io
 
       - name: Add .nojekyll file

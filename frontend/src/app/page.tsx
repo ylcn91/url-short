@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Logo } from "@/components/logo";
 import {
-  Link2,
   BarChart3,
   Globe,
   Shield,
@@ -18,9 +18,7 @@ import {
   CheckCircle2,
   ArrowRight,
   Star,
-  TrendingUp,
   Target,
-  LayoutDashboard,
 } from "lucide-react";
 
 /**
@@ -34,10 +32,7 @@ export default function LandingPage() {
       {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Link2 className="h-6 w-6 text-primary" />
-            <span className="text-xl font-bold">URLShort</span>
-          </div>
+          <Logo />
           <nav className="hidden md:flex items-center gap-6">
             <Link href="#features" className="text-sm font-medium hover:text-primary">
               Features
@@ -45,7 +40,7 @@ export default function LandingPage() {
             <Link href="#pricing" className="text-sm font-medium hover:text-primary">
               Pricing
             </Link>
-            <Link href="#" className="text-sm font-medium hover:text-primary">
+            <Link href="/docs" className="text-sm font-medium hover:text-primary">
               Docs
             </Link>
           </nav>
@@ -62,61 +57,63 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="container flex flex-col items-center gap-8 py-24 md:py-32">
-        <Badge variant="secondary" className="px-4 py-1">
-          Trusted by 10,000+ teams worldwide
-        </Badge>
-        <h1 className="max-w-5xl text-center text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          Connections start
-          <br />
-          with{" "}
-          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-            a link
-          </span>
-        </h1>
-        <p className="max-w-3xl text-center text-lg text-muted-foreground sm:text-xl md:text-2xl">
-          Create powerful short links, track every click, and turn insights into action.
-          Trusted by marketing teams, developers, and businesses worldwide.
-        </p>
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Link href="/signup">
-            <Button size="lg" className="gap-2">
-              Start Free Trial
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href="#pricing">
-            <Button size="lg" variant="outline">
-              View Pricing
-            </Button>
-          </Link>
-        </div>
-
-        {/* Quick Demo */}
-        <div className="mt-12 w-full max-w-3xl rounded-lg border bg-card p-6 shadow-lg">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="flex h-3 w-3 rounded-full bg-red-500" />
-            <div className="flex h-3 w-3 rounded-full bg-yellow-500" />
-            <div className="flex h-3 w-3 rounded-full bg-green-500" />
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Original:</span>
-              <code className="flex-1 truncate rounded bg-muted px-2 py-1">
-                https://example.com/blog/10-ways-to-improve-your-marketing-strategy-in-2024
-              </code>
-            </div>
-            <div className="flex items-center gap-2">
-              <ArrowRight className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted-foreground">Shortened:</span>
-              <code className="flex-1 rounded bg-primary/10 px-2 py-1 text-primary font-medium">
-                short.link/marketing-2024
-              </code>
-              <Button size="sm" variant="secondary">
-                Copy
+      <section className="relative">
+        <div className="container flex flex-col items-center gap-8 py-24 md:py-32 animate-slide-up">
+          <Badge variant="secondary" className="px-4 py-1">
+            Trusted by 10,000+ teams worldwide
+          </Badge>
+          <h1 className="max-w-5xl text-center text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            Connections start
+            <br />
+            with{" "}
+            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+              a link
+            </span>
+          </h1>
+          <p className="max-w-3xl text-center text-lg text-muted-foreground sm:text-xl md:text-2xl">
+            Create powerful short links, track every click, and turn insights into action.
+            Trusted by marketing teams, developers, and businesses worldwide.
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link href="/signup">
+              <Button size="lg" className="gap-2">
+                Start Free Trial
+                <ArrowRight className="h-4 w-4" />
               </Button>
+            </Link>
+            <Link href="#pricing">
+              <Button size="lg" variant="outline">
+                View Pricing
+              </Button>
+            </Link>
+          </div>
+
+          {/* Quick Demo */}
+          <div className="mt-12 w-full max-w-3xl rounded-lg border bg-card p-6 shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="flex h-3 w-3 rounded-full bg-red-500" />
+              <div className="flex h-3 w-3 rounded-full bg-yellow-500" />
+              <div className="flex h-3 w-3 rounded-full bg-green-500" />
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Original:</span>
+                <code className="flex-1 truncate rounded bg-muted px-2 py-1">
+                  https://example.com/blog/10-ways-to-improve-your-marketing-strategy-in-2024
+                </code>
+              </div>
+              <div className="flex items-center gap-2">
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground">Shortened:</span>
+                <code className="flex-1 rounded bg-primary/10 px-2 py-1 text-primary font-medium">
+                  short.link/marketing-2024
+                </code>
+                <Button size="sm" variant="secondary">
+                  Copy
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -155,7 +152,7 @@ export default function LandingPage() {
           </div>
 
           <div className="grid gap-8 md:grid-cols-3">
-            <Card className="border-2">
+            <Card className="border-2 hover:shadow-lg hover:border-primary/20 transition-shadow duration-200 cursor-pointer">
               <CardHeader>
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <Target className="h-6 w-6 text-primary" />
@@ -167,7 +164,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2">
+            <Card className="border-2 hover:shadow-lg hover:border-primary/20 transition-shadow duration-200 cursor-pointer">
               <CardHeader>
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <Code className="h-6 w-6 text-primary" />
@@ -179,7 +176,7 @@ export default function LandingPage() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2">
+            <Card className="border-2 hover:shadow-lg hover:border-primary/20 transition-shadow duration-200 cursor-pointer">
               <CardHeader>
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                   <Users className="h-6 w-6 text-primary" />
@@ -209,7 +206,7 @@ export default function LandingPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {/* Feature Cards */}
             {features.map((feature, index) => (
-              <Card key={index} className="border-2">
+              <Card key={index} className="border-2 hover:shadow-lg hover:border-primary/20 transition-shadow duration-200 cursor-pointer">
                 <CardHeader>
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                     {feature.icon}
@@ -239,7 +236,11 @@ export default function LandingPage() {
             {pricingTiers.map((tier, index) => (
               <Card
                 key={index}
-                className={tier.featured ? "border-primary shadow-lg" : ""}
+                className={
+                  tier.featured
+                    ? "ring-1 ring-foreground/20 shadow-md hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                    : "hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+                }
               >
                 <CardHeader>
                   {tier.featured && (
@@ -302,7 +303,7 @@ export default function LandingPage() {
                     ))}
                   </div>
                   <CardDescription className="text-base">
-                    "{testimonial.quote}"
+                    &quot;{testimonial.quote}&quot;
                   </CardDescription>
                 </CardHeader>
                 <CardFooter className="flex-col items-start">
@@ -346,9 +347,8 @@ export default function LandingPage() {
         <div className="container">
           <div className="grid gap-8 md:grid-cols-4">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Link2 className="h-5 w-5 text-primary" />
-                <span className="font-bold">URLShort</span>
+              <div className="mb-4">
+                <Logo size="sm" />
               </div>
               <p className="text-sm text-muted-foreground">
                 Professional URL shortening and link management platform.
@@ -359,7 +359,7 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link href="#" className="hover:text-foreground">Features</Link></li>
                 <li><Link href="#" className="hover:text-foreground">Pricing</Link></li>
-                <li><Link href="#" className="hover:text-foreground">API</Link></li>
+                <li><Link href="/docs" className="hover:text-foreground">API Docs</Link></li>
               </ul>
             </div>
             <div>
@@ -380,7 +380,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-12 border-t pt-8 text-center text-sm text-muted-foreground">
-            © 2024 URLShort. All rights reserved.
+            &copy; {new Date().getFullYear()} URLShort. All rights reserved.
           </div>
         </div>
       </footer>
@@ -391,7 +391,7 @@ export default function LandingPage() {
 // Features data
 const features = [
   {
-    icon: <Link2 className="h-6 w-6 text-primary" />,
+    icon: <Zap className="h-6 w-6 text-primary" />,
     title: "Custom Short Links",
     description: "Create branded, memorable links with custom slugs that reflect your brand.",
   },

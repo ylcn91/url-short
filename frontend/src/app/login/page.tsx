@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Link2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { Logo } from "@/components/logo";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/stores/auth-store";
 
@@ -67,22 +67,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/50 p-4">
-      {/* Logo */}
-      <Link href="/" className="mb-8 flex items-center gap-2">
-        <Link2 className="h-8 w-8 text-primary" />
-        <span className="text-2xl font-bold">URLShort</span>
-      </Link>
+    <div className="min-h-screen flex">
+      {/* Left branding panel - hidden on mobile */}
+      <div className="hidden lg:flex lg:w-1/2 bg-[#191919] text-white p-12 flex-col justify-between">
+        <div>
+          <Link href="/" className="mb-16 inline-block">
+            <Logo size="lg" />
+          </Link>
+          <h1 className="text-3xl font-semibold tracking-tight mb-3 text-white/95">
+            Shorten, track, and optimize your links
+          </h1>
+          <p className="text-base text-white/50 mb-10 leading-relaxed">
+            The modern link management platform for teams and individuals.
+          </p>
+          <ul className="space-y-3">
+            <li className="flex items-center gap-3 text-sm text-white/60">
+              <span className="h-1 w-1 rounded-full bg-white/40 shrink-0" />
+              Create short, memorable links in seconds
+            </li>
+            <li className="flex items-center gap-3 text-sm text-white/60">
+              <span className="h-1 w-1 rounded-full bg-white/40 shrink-0" />
+              Track clicks and analyze performance
+            </li>
+            <li className="flex items-center gap-3 text-sm text-white/60">
+              <span className="h-1 w-1 rounded-full bg-white/40 shrink-0" />
+              Collaborate with your team in workspaces
+            </li>
+            <li className="flex items-center gap-3 text-sm text-white/60">
+              <span className="h-1 w-1 rounded-full bg-white/40 shrink-0" />
+              Custom slugs and branded short links
+            </li>
+          </ul>
+        </div>
+        <p className="text-xs text-white/30">
+          Trusted by thousands of teams worldwide
+        </p>
+      </div>
 
-      {/* Login Form */}
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Welcome back</CardTitle>
-          <CardDescription>
-            Sign in to your account to continue
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      {/* Right form panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+        <div className="w-full max-w-md space-y-6 animate-fade-in">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex justify-center mb-4">
+            <Link href="/">
+              <Logo size="lg" />
+            </Link>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-2xl font-semibold tracking-tight">Welcome back</h2>
+            <p className="text-muted-foreground">
+              Enter your credentials to access your account
+            </p>
+          </div>
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Email Field */}
             <div className="space-y-2">
@@ -146,37 +184,29 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-        </CardContent>
-        <CardFooter className="flex-col gap-3">
-          <div className="relative w-full">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-card px-2 text-muted-foreground">
-                Don't have an account?
-              </span>
-            </div>
-          </div>
-          <Link href="/signup" className="w-full">
-            <Button variant="outline" className="w-full">
-              Create an Account
-            </Button>
-          </Link>
-        </CardFooter>
-      </Card>
 
-      {/* Footer */}
-      <p className="mt-8 text-center text-sm text-muted-foreground">
-        By signing in, you agree to our{" "}
-        <Link href="#" className="underline hover:text-foreground">
-          Terms of Service
-        </Link>{" "}
-        and{" "}
-        <Link href="#" className="underline hover:text-foreground">
-          Privacy Policy
-        </Link>
-      </p>
+          <p className="text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-medium underline underline-offset-4 hover:text-foreground"
+            >
+              Sign up
+            </Link>
+          </p>
+
+          <p className="text-center text-xs text-muted-foreground">
+            By signing in, you agree to our{" "}
+            <Link href="#" className="underline hover:text-foreground">
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link href="#" className="underline hover:text-foreground">
+              Privacy Policy
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

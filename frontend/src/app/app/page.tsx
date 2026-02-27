@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layouts/page-header";
 import {
   Table,
   TableBody,
@@ -28,16 +30,10 @@ import { useAuthStore } from "@/stores/auth-store";
 import { formatNumber, formatRelativeTime, getShortUrl, copyToClipboard } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 
-/**
- * Dashboard Overview Page
- * Displays key metrics, top links, and recent activity
- * Real-time data fetching with React Query
- */
 export default function DashboardPage() {
   const workspace = useAuthStore((state) => state.workspace);
   const { toast } = useToast();
 
-  // Fetch dashboard stats
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-stats", workspace?.id],
     queryFn: () => analyticsApi.getDashboardStats(workspace!.id),
@@ -57,91 +53,105 @@ export default function DashboardPage() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div className="space-y-1">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-4 w-72" />
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {[...Array(4)].map((_, i) => (
             <Card key={i}>
-              <CardHeader className="animate-pulse">
-                <div className="h-4 w-20 bg-muted rounded" />
-                <div className="h-8 w-24 bg-muted rounded mt-2" />
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-8 w-8 rounded-lg" />
               </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-20 mb-2" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
             </Card>
           ))}
         </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
+  const statCards = [
+    {
+      title: "Total Links",
+      value: formatNumber(stats?.totalLinks || 0),
+      subtitle: `${formatNumber(stats?.activeLinks || 0)} active`,
+      trend: "+12%",
+      trendUp: true,
+      icon: Link2,
+    },
+    {
+      title: "Total Clicks",
+      value: formatNumber(stats?.totalClicks || 0),
+      subtitle: "All-time clicks",
+      trend: "+8%",
+      trendUp: true,
+      icon: MousePointerClick,
+    },
+    {
+      title: "This Month",
+      value: formatNumber(stats?.clicksThisMonth || 0),
+      subtitle: `+${formatNumber(stats?.clicksThisWeek || 0)} this week`,
+      trend: "+23%",
+      trendUp: true,
+      icon: TrendingUp,
+    },
+    {
+      title: "Today",
+      value: formatNumber(stats?.clicksToday || 0),
+      subtitle: "Clicks today",
+      trend: "+5%",
+      trendUp: true,
+      icon: Activity,
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Overview</h1>
-        <p className="text-muted-foreground">
-          Track your link performance and engagement metrics
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Track your link performance and engagement metrics"
+      />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Links</CardTitle>
-            <Link2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(stats?.totalLinks || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {formatNumber(stats?.activeLinks || 0)} active
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Clicks</CardTitle>
-            <MousePointerClick className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(stats?.totalClicks || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              All-time clicks
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">This Month</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(stats?.clicksThisMonth || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              +{formatNumber(stats?.clicksThisWeek || 0)} this week
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Today</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatNumber(stats?.clicksToday || 0)}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Clicks today
-            </p>
-          </CardContent>
-        </Card>
+        {statCards.map((card, index) => (
+          <Card key={card.title} className={`animate-slide-up stagger-${index + 1}`}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+              <div className="rounded-lg bg-muted p-2">
+                <card.icon className="h-4 w-4 text-foreground" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <div className="text-2xl font-bold">{card.value}</div>
+                <span className="text-xs text-muted-foreground flex items-center">
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  {card.trend}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {card.subtitle}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Top Links */}
@@ -184,7 +194,7 @@ export default function DashboardPage() {
               </TableHeader>
               <TableBody>
                 {stats.topLinks.slice(0, 5).map((link) => (
-                  <TableRow key={link.id}>
+                  <TableRow key={link.id} className="hover:bg-muted/50 transition-colors">
                     <TableCell className="font-medium">
                       <code className="text-sm">{getShortUrl(link.shortCode)}</code>
                     </TableCell>
@@ -196,6 +206,11 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Badge variant={link.isActive ? "success" : "secondary"}>
+                        <span
+                          className={`inline-block h-2 w-2 rounded-full mr-1.5 ${
+                            link.isActive ? "bg-green-500" : "bg-red-500"
+                          }`}
+                        />
                         {link.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </TableCell>
@@ -205,11 +220,12 @@ export default function DashboardPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleCopyLink(link.shortCode)}
+                          aria-label="Copy link"
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
                         <Link href={`/app/links/${link.id}`}>
-                          <Button size="sm" variant="ghost">
+                          <Button size="sm" variant="ghost" aria-label="View link details">
                             <ExternalLink className="h-4 w-4" />
                           </Button>
                         </Link>
@@ -242,12 +258,12 @@ export default function DashboardPage() {
                   className="flex items-center justify-between border-b pb-3 last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                      <MousePointerClick className="h-4 w-4 text-primary" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                      <MousePointerClick className="h-4 w-4 text-foreground" />
                     </div>
                     <div>
                       <p className="text-sm font-medium">
-                        {event.country || "Unknown"} • {event.deviceType}
+                        {event.country || "Unknown"} &bull; {event.deviceType}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {event.referer || "Direct"}

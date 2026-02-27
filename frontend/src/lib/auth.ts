@@ -3,7 +3,7 @@
  * Handles token management and auth state persistence
  */
 
-import { AuthResponse } from "./types";
+import { AuthResponse, Workspace } from "./types";
 
 const TOKEN_KEY = "auth_token";
 const USER_KEY = "auth_user";
@@ -13,12 +13,14 @@ export const authStorage = {
   /**
    * Save authentication data to localStorage
    */
-  saveAuth: (data: AuthResponse): void => {
+  saveAuth: (data: AuthResponse, workspace: Workspace | null): void => {
     if (typeof window === "undefined") return;
 
     localStorage.setItem(TOKEN_KEY, data.accessToken);
     localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-    localStorage.setItem(WORKSPACE_KEY, JSON.stringify(data.workspace));
+    if (workspace) {
+      localStorage.setItem(WORKSPACE_KEY, JSON.stringify(workspace));
+    }
   },
 
   /**

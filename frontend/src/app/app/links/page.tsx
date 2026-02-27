@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PageHeader } from "@/components/layouts/page-header";
 import {
   Table,
   TableBody,
@@ -36,36 +38,39 @@ import {
   BarChart3,
   ChevronLeft,
   ChevronRight,
+  Link2,
 } from "lucide-react";
 import { linksApi } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
 import { formatNumber, formatDate, getShortUrl, copyToClipboard } from "@/lib/utils";
 import { useToast } from "@/components/ui/use-toast";
 
-/**
- * Links List Page
- * Displays all links with search, filtering, and pagination
- * Supports bulk actions and quick link management
- */
 export default function LinksPage() {
   const router = useRouter();
   const workspace = useAuthStore((state) => state.workspace);
   const { toast } = useToast();
 
   const [search, setSearch] = React.useState("");
+  const [debouncedSearch, setDebouncedSearch] = React.useState("");
   const [status, setStatus] = React.useState<"all" | "active" | "inactive" | "expired">("all");
   const [page, setPage] = React.useState(1);
   const pageSize = 10;
 
-  // Fetch links with filters
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["links", workspace?.id, search, status, page],
+    queryKey: ["links", workspace?.id, debouncedSearch, status, page],
     queryFn: () =>
       linksApi.getLinks({
         workspaceId: workspace!.id,
         page,
         pageSize,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: status === "all" ? undefined : status,
       }),
     enabled: !!workspace,
@@ -102,21 +107,17 @@ export default function LinksPage() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Links</h1>
-          <p className="text-muted-foreground">
-            Manage and track all your shortened links
-          </p>
-        </div>
+      <PageHeader
+        title="Links"
+        description="Manage and track all your shortened links"
+      >
         <Link href="/app/links/new">
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
             Create Link
           </Button>
         </Link>
-      </div>
+      </PageHeader>
 
       {/* Filters */}
       <Card>
@@ -136,13 +137,18 @@ export default function LinksPage() {
             {/* Status Filter */}
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
-              <div className="flex gap-2">
-                {["all", "active", "inactive", "expired"].map((s) => (
+              <div className="flex gap-1">
+                {(["all", "active", "inactive", "expired"] as const).map((s) => (
                   <Button
                     key={s}
-                    variant={status === s ? "default" : "outline"}
+                    variant="ghost"
                     size="sm"
-                    onClick={() => setStatus(s as any)}
+                    onClick={() => setStatus(s)}
+                    className={
+                      status === s
+                        ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground"
+                        : ""
+                    }
                   >
                     {s.charAt(0).toUpperCase() + s.slice(1)}
                   </Button>
@@ -160,7 +166,7 @@ export default function LinksPage() {
             <div>
               <CardTitle>All Links</CardTitle>
               <CardDescription>
-                {data?.total || 0} total links
+                {data?.totalElements || 0} total links
               </CardDescription>
             </div>
           </div>
@@ -169,11 +175,21 @@ export default function LinksPage() {
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+                <div key={i} className="flex items-center gap-4 py-3">
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-64" />
+                  </div>
+                  <Skeleton className="h-4 w-12" />
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-8" />
+                </div>
               ))}
             </div>
           ) : !data?.content || data.content.length === 0 ? (
             <div className="text-center py-12">
+              <Link2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">
                 No links found. Create your first link to get started.
               </p>
@@ -199,7 +215,7 @@ export default function LinksPage() {
                 </TableHeader>
                 <TableBody>
                   {data.content.map((link) => (
-                    <TableRow key={link.id}>
+                    <TableRow key={link.id} className="hover:bg-muted/50 transition-colors">
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <code className="text-sm font-medium">
@@ -236,6 +252,13 @@ export default function LinksPage() {
                               : "secondary"
                           }
                         >
+                          <span
+                            className={`inline-block h-2 w-2 rounded-full mr-1.5 ${
+                              link.isActive
+                                ? "bg-green-500"
+                                : "bg-red-500"
+                            }`}
+                          />
                           {link.isActive
                             ? "Active"
                             : link.expiresAt && new Date(link.expiresAt) < new Date()
@@ -249,7 +272,7 @@ export default function LinksPage() {
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
+                            <Button variant="ghost" size="sm" aria-label="Link actions">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

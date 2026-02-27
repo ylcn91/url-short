@@ -96,3 +96,15 @@ export function formatBytes(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
 }
+
+/**
+ * Returns the initials (up to 2 characters) from a full name
+ */
+export function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((part) => part.charAt(0))
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+}

@@ -8,20 +8,20 @@ import { Loader2 } from "lucide-react";
 /**
  * Protected route wrapper
  * Redirects to login if user is not authenticated
- * Shows loading state while checking auth
+ * Waits for auth hydration from localStorage before deciding
  */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isLoading = useAuthStore((state) => state.isLoading);
+  const isHydrated = useAuthStore((state) => state.isHydrated);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isHydrated && !isAuthenticated) {
       router.push("/login");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isHydrated, router]);
 
-  if (isLoading) {
+  if (!isHydrated) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">

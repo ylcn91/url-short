@@ -56,7 +56,7 @@ export function LinkCreateModal({ open, onOpenChange, workspaceId = 1 }: LinkCre
     onSuccess: (data) => {
       toast({
         title: "Link Created!",
-        description: `Short URL: ${data.shortUrl}`,
+        description: `Short URL: ${data.shortCode}`,
       });
       queryClient.invalidateQueries({ queryKey: ["links"] });
       handleClose();

@@ -6,9 +6,12 @@
 export interface User {
   id: number;
   email: string;
-  name: string;
+  fullName: string;
   createdAt: string;
-  role: "USER" | "ADMIN";
+  role: "ADMIN" | "MEMBER" | "VIEWER";
+  workspaceId?: number;
+  workspaceName?: string;
+  workspaceSlug?: string;
 }
 
 export interface Workspace {
@@ -166,15 +169,17 @@ export interface LoginRequest {
 export interface SignupRequest {
   email: string;
   password: string;
-  name: string;
+  fullName: string;
   workspaceName: string;
   workspaceSlug: string;
 }
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
   user: User;
-  workspace: Workspace;
 }
 
 export interface DashboardStats {
