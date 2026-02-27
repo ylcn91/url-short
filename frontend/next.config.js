@@ -4,8 +4,9 @@ const isGitHubPages = process.env.GITHUB_PAGES === 'true';
 const nextConfig = {
   reactStrictMode: true,
 
-  // Static export only for GitHub Pages deployment
-  ...(isGitHubPages && { output: 'export', trailingSlash: true }),
+  // Static export for GitHub Pages, standalone for Docker
+  output: isGitHubPages ? 'export' : 'standalone',
+  ...(isGitHubPages && { trailingSlash: true }),
 
   basePath: isGitHubPages ? '/url-short' : '',
 
