@@ -875,7 +875,7 @@ Content-Type: application/json
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-xs">404</td>
-                      <td className="px-4 py-2 text-muted-foreground">Not Found — resource doesn't exist</td>
+                      <td className="px-4 py-2 text-muted-foreground">Not Found — resource doesn&apos;t exist</td>
                     </tr>
                     <tr>
                       <td className="px-4 py-2 font-mono text-xs">409</td>

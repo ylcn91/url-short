@@ -407,7 +407,7 @@ export default function WorkspaceSettingsPage() {
                       <div className="space-y-1">
                         <p className="text-sm font-medium">Save this key securely!</p>
                         <p className="text-xs text-muted-foreground">
-                          You won't be able to see it again after closing this dialog.
+                          You won&apos;t be able to see it again after closing this dialog.
                         </p>
                       </div>
                     </div>
