@@ -16,6 +16,10 @@ on:
       - 'pom.xml'
       - '.github/workflows/backend-ci.yml'
 
+permissions:
+  contents: read
+  checks: write
+
 concurrency:
   group: backend-ci-${{ github.ref }}
   cancel-in-progress: true
