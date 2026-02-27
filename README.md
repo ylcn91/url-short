@@ -162,8 +162,8 @@ cd frontend && npm run lint && npm run type-check
 | [Kafka Decision](docs/KAFKA_DECISION.md) | Event streaming architecture |
 | [Deployment](docs/DEPLOYMENT.md) | Production deployment guide |
 | [Local Setup](docs/LOCAL_SETUP.md) | Development environment |
-| [Contributing](https://ylcn91.github.io/url-short/CONTRIBUTING.md) | Contribution guidelines |
-| [Frontend](https://ylcn91.github.io/url-short/docs/FRONTEND.md) | Frontend documentation |
+| [Contributing](https://ylcn91.github.io/url-short/CONTRIBUTING.html) | Contribution guidelines |
+| [Frontend](https://ylcn91.github.io/url-short/docs/FRONTEND.html) | Frontend documentation |
 
 ## License
 

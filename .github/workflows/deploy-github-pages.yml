@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'frontend/**'
+      - 'docs/**'
       - '.github/workflows/deploy-github-pages.yml'
   workflow_dispatch:
 
@@ -36,6 +37,10 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm ci
+
+      - name: Convert docs to HTML
+        working-directory: ./frontend
+        run: node scripts/build-docs.mjs
 
       - name: Remove dynamic routes for static export
         working-directory: ./frontend

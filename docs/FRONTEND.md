@@ -143,7 +143,8 @@ The landing page is statically exported and deployed to GitHub Pages.
 - Dynamic routes (`[id]`) are excluded from static export
 
 **Workflow** (`.github/workflows/deploy-github-pages.yml`):
-- Triggers on push to `main` (paths: `frontend/**`)
+- Triggers on push to `main` (paths: `frontend/**`, `docs/**`)
+- Converts `docs/*.md` to HTML via `scripts/build-docs.mjs`
 - Builds with `npm run build`
 - Deploys `frontend/out/` via `actions/deploy-pages@v4`
 

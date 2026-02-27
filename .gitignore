@@ -100,3 +100,7 @@ flyway.conf
 
 # Playwright MCP
 .playwright-mcp/
+
+# Generated docs (built from docs/*.md by scripts/build-docs.mjs)
+frontend/public/docs/*.html
+frontend/public/CONTRIBUTING.html
