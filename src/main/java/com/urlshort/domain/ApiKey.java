@@ -17,7 +17,6 @@ import java.util.Objects;
 
 /**
  * API key entity for programmatic access to the platform.
- *
  * API keys are scoped to workspaces and support fine-grained permissions through
  * scopes. Keys are stored as SHA-256 hashes for security. Uses hard delete strategy
  * - expired keys are permanently removed after a grace period.
@@ -90,117 +89,6 @@ public class ApiKey {
     @Builder.Default
     @Column(columnDefinition = "jsonb", nullable = false)
     private List<String> scopes = new ArrayList<>();
-
-    // Business logic methods
-
-    /**
-     * Update the last used timestamp to now.
-     */
-    public void updateLastUsed() {
-        this.lastUsedAt = Instant.now();
-    }
-
-    /**
-     * Check if the API key has expired.
-     *
-     * @return true if the key has expired, false otherwise
-     */
-    public boolean isExpired() {
-        return expiresAt != null && Instant.now().isAfter(expiresAt);
-    }
-
-    /**
-     * Check if the API key is currently usable (active and not expired).
-     *
-     * @return true if the key can be used
-     */
-    public boolean isUsable() {
-        return isActive && !isExpired();
-    }
-
-    /**
-     * Deactivate this API key.
-     */
-    public void deactivate() {
-        this.isActive = false;
-    }
-
-    /**
-     * Activate this API key.
-     */
-    public void activate() {
-        this.isActive = true;
-    }
-
-    /**
-     * Check if this API key has a specific scope.
-     *
-     * @param scope the scope to check (e.g., "links:read", "links:write")
-     * @return true if the key has the specified scope
-     */
-    public boolean hasScope(String scope) {
-        return scopes != null && scopes.contains(scope);
-    }
-
-    /**
-     * Check if this API key has all specified scopes.
-     *
-     * @param requiredScopes the scopes to check
-     * @return true if the key has all specified scopes
-     */
-    public boolean hasAllScopes(List<String> requiredScopes) {
-        return scopes != null && scopes.containsAll(requiredScopes);
-    }
-
-    /**
-     * Check if this API key has any of the specified scopes.
-     *
-     * @param requiredScopes the scopes to check
-     * @return true if the key has at least one of the specified scopes
-     */
-    public boolean hasAnyScope(List<String> requiredScopes) {
-        if (scopes == null || requiredScopes == null) {
-            return false;
-        }
-        return requiredScopes.stream().anyMatch(scopes::contains);
-    }
-
-    /**
-     * Add a scope to this API key.
-     *
-     * @param scope the scope to add
-     */
-    public void addScope(String scope) {
-        if (scopes == null) {
-            scopes = new ArrayList<>();
-        }
-        if (!scopes.contains(scope)) {
-            scopes.add(scope);
-        }
-    }
-
-    /**
-     * Remove a scope from this API key.
-     *
-     * @param scope the scope to remove
-     */
-    public void removeScope(String scope) {
-        if (scopes != null) {
-            scopes.remove(scope);
-        }
-    }
-
-    /**
-     * Get a masked version of the key prefix for display (e.g., "sk_live_abc...").
-     *
-     * @return masked key prefix
-     */
-    public String getMaskedKey() {
-        if (keyPrefix == null || keyPrefix.length() < 8) {
-            return keyPrefix;
-        }
-        return keyPrefix.substring(0, Math.min(12, keyPrefix.length())) + "...";
-    }
 
     // equals and hashCode based on business key (key_hash)
 

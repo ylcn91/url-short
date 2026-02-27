@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Custom implementation of Spring Security's UserDetailsService.
- *
  * This service loads user-specific data during authentication. It retrieves
  * user information from the database and handles workspace context for
  * multi-tenancy support.

@@ -1,65 +1,141 @@
 package com.urlshort.service;
 
-import com.urlshort.dto.LinkPasswordRequest;
-import com.urlshort.dto.LinkPasswordResponse;
-import com.urlshort.dto.PasswordValidationRequest;
-import com.urlshort.dto.PasswordValidationResponse;
+import com.urlshort.domain.LinkPassword;
+import com.urlshort.domain.ShortLink;
+import com.urlshort.dto.password.LinkPasswordRequest;
+import com.urlshort.dto.password.LinkPasswordResponse;
+import com.urlshort.dto.password.PasswordValidationRequest;
+import com.urlshort.dto.password.PasswordValidationResponse;
+import com.urlshort.exception.LinkAlreadyPasswordProtectedException;
+import com.urlshort.exception.ResourceNotFoundException;
+import com.urlshort.repository.LinkPasswordRepository;
+import com.urlshort.repository.ShortLinkRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
- * Service interface for password-protected links.
- * <p>
- * Provides operations for adding, validating, and removing password protection
- * on short links. Uses BCrypt for secure password hashing.
- * </p>
+ * Implementation of password-protected links service.
  */
-public interface LinkPasswordService {
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class LinkPasswordService {
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
-    /**
-     * Adds password protection to a short link.
-     * <p>
-     * Hashes the password using BCrypt before storing.
-     * </p>
-     *
-     * @param shortLinkId the short link ID
-     * @param request the password request
-     * @return the created password protection
-     * @throws IllegalArgumentException if link already has password
-     */
-    LinkPasswordResponse addPassword(Long shortLinkId, LinkPasswordRequest request);
+    private final LinkPasswordRepository passwordRepository;
 
-    /**
-     * Validates a password for a protected link.
-     * <p>
-     * Checks if the link is locked due to failed attempts.
-     * Compares provided password with stored hash.
-     * Records failed attempts and locks if threshold exceeded.
-     * </p>
-     *
-     * @param shortLinkId the short link ID
-     * @param request the password validation request
-     * @return validation result with access token if successful
-     */
-    PasswordValidationResponse validatePassword(Long shortLinkId, PasswordValidationRequest request);
+    private final ShortLinkRepository shortLinkRepository;
 
-    /**
-     * Checks if a short link has password protection.
-     *
-     * @param shortLinkId the short link ID
-     * @return true if password protected
-     */
-    boolean isPasswordProtected(Long shortLinkId);
+        @Transactional
+    public LinkPasswordResponse addPassword(Long shortLinkId, LinkPasswordRequest request) {
+        log.info("Adding password protection to link {}", shortLinkId);
 
-    /**
-     * Removes password protection from a short link.
-     *
-     * @param shortLinkId the short link ID
-     */
-    void removePassword(Long shortLinkId);
+        ShortLink shortLink = shortLinkRepository.findById(shortLinkId)
+                .orElseThrow(() -> new ResourceNotFoundException("Short link not found"));
 
-    /**
-     * Resets failed attempts for a locked link.
-     *
-     * @param shortLinkId the short link ID
-     */
-    void resetFailedAttempts(Long shortLinkId);
+        if (passwordRepository.existsByShortLinkId(shortLinkId)) {
+            throw new LinkAlreadyPasswordProtectedException("Link " + shortLinkId + " already has password protection");
+        }
+
+        String hashedPassword = passwordEncoder.encode(request.getPassword());
+
+        LinkPassword linkPassword = LinkPassword.builder()
+                .shortLink(shortLink)
+                .passwordHash(hashedPassword)
+                .failedAttempts(0)
+                .build();
+
+        LinkPassword saved = passwordRepository.save(linkPassword);
+        log.info("Password protection added to link {}", shortLinkId);
+
+        return toResponse(saved);
+    }
+
+        @Transactional
+    public PasswordValidationResponse validatePassword(Long shortLinkId, PasswordValidationRequest request) {
+        log.info("Validating password for link {}", shortLinkId);
+
+        LinkPassword linkPassword = passwordRepository.findByShortLinkId(shortLinkId)
+                .orElseThrow(() -> new ResourceNotFoundException("Password protection not found"));
+
+        // Check if locked
+        if (linkPassword.isLocked()) {
+            log.warn("Link {} is locked until {}", shortLinkId, linkPassword.getLockedUntil());
+            return PasswordValidationResponse.builder()
+                    .valid(false)
+                    .locked(true)
+                    .lockedUntil(linkPassword.getLockedUntil())
+                    .message("Too many failed attempts. Link is locked.")
+                    .build();
+        }
+
+        // Validate password
+        boolean valid = passwordEncoder.matches(request.getPassword(), linkPassword.getPasswordHash());
+
+        if (valid) {
+            linkPassword.resetFailedAttempts();
+            passwordRepository.save(linkPassword);
+            log.info("Password validated successfully for link {}", shortLinkId);
+
+            // Generate access token
+            String accessToken = UUID.randomUUID().toString();
+
+            return PasswordValidationResponse.builder()
+                    .valid(true)
+                    .locked(false)
+                    .accessToken(accessToken)
+                    .message("Password correct")
+                    .build();
+        } else {
+            linkPassword.recordFailedAttempt();
+            passwordRepository.save(linkPassword);
+            log.warn("Invalid password attempt for link {}. Failed attempts: {}",
+                    shortLinkId, linkPassword.getFailedAttempts());
+
+            return PasswordValidationResponse.builder()
+                    .valid(false)
+                    .locked(linkPassword.isLocked())
+                    .lockedUntil(linkPassword.getLockedUntil())
+                    .failedAttempts(linkPassword.getFailedAttempts())
+                    .message("Invalid password")
+                    .build();
+        }
+    }
+
+        @Transactional(readOnly = true)
+    public boolean isPasswordProtected(Long shortLinkId) {
+        return passwordRepository.existsByShortLinkId(shortLinkId);
+    }
+
+        @Transactional
+    public void removePassword(Long shortLinkId) {
+        log.info("Removing password protection from link {}", shortLinkId);
+        passwordRepository.deleteByShortLinkId(shortLinkId);
+    }
+
+        @Transactional
+    public void resetFailedAttempts(Long shortLinkId) {
+        log.info("Resetting failed attempts for link {}", shortLinkId);
+        LinkPassword linkPassword = passwordRepository.findByShortLinkId(shortLinkId)
+                .orElseThrow(() -> new ResourceNotFoundException("Password protection not found"));
+
+        linkPassword.resetFailedAttempts();
+        passwordRepository.save(linkPassword);
+    }
+
+    private LinkPasswordResponse toResponse(LinkPassword linkPassword) {
+        return LinkPasswordResponse.builder()
+                .id(linkPassword.getId())
+                .shortLinkId(linkPassword.getShortLink().getId())
+                .failedAttempts(linkPassword.getFailedAttempts())
+                .locked(linkPassword.isLocked())
+                .lockedUntil(linkPassword.getLockedUntil())
+                .createdAt(linkPassword.getCreatedAt())
+                .build();
+    }
 }

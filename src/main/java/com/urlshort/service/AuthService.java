@@ -3,7 +3,11 @@ package com.urlshort.service;
 import com.urlshort.domain.User;
 import com.urlshort.domain.UserRole;
 import com.urlshort.domain.Workspace;
-import com.urlshort.dto.*;
+import com.urlshort.dto.auth.AuthResponse;
+import com.urlshort.dto.auth.LoginRequest;
+import com.urlshort.dto.auth.RefreshTokenRequest;
+import com.urlshort.dto.auth.SignupRequest;
+import com.urlshort.dto.auth.UserResponse;
 import com.urlshort.exception.DuplicateResourceException;
 import com.urlshort.exception.UnauthorizedException;
 import com.urlshort.repository.UserRepository;
@@ -24,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service for handling authentication operations.
- *
  * This service manages user registration, login, token refresh, and
  * current user information retrieval.
  */
@@ -183,7 +186,10 @@ public class AuthService {
             throw new UnauthorizedException("User is not authenticated");
         }
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof CustomUserDetails userDetails)) {
+            throw new UnauthorizedException("Invalid authentication");
+        }
         User user = userRepository.findById(userDetails.getId())
             .orElseThrow(() -> new UnauthorizedException("User not found"));
 

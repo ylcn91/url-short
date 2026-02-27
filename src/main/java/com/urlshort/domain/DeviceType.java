@@ -2,7 +2,6 @@ package com.urlshort.domain;
 
 /**
  * Device type enumeration for click event analytics.
- *
  * Categorizes the type of device used to access a short link.
  */
 public enum DeviceType {

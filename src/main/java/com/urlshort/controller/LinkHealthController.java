@@ -1,12 +1,14 @@
 package com.urlshort.controller;
 
-import com.urlshort.dto.*;
+import com.urlshort.dto.common.ApiResponse;
+import com.urlshort.dto.health.HealthCheckResult;
+import com.urlshort.dto.health.LinkHealthResponse;
 import com.urlshort.service.LinkHealthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +23,10 @@ import java.util.List;
 @RequestMapping("/api/v1/links/{linkId}/health")
 @Tag(name = "Link Health", description = "Endpoints for link health monitoring and uptime tracking")
 @Slf4j
+@RequiredArgsConstructor
 public class LinkHealthController {
 
-    @Autowired
-    private LinkHealthService healthService;
+    private final LinkHealthService healthService;
 
     @PostMapping("/check")
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")

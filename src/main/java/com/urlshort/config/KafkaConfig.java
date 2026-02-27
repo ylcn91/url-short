@@ -1,6 +1,6 @@
 package com.urlshort.config;
 
-import com.urlshort.dto.ClickEventDto;
+import com.urlshort.dto.event.ClickEventDto;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -25,7 +25,6 @@ import java.util.Map;
 
 /**
  * Kafka configuration for click event tracking.
- *
  * Configures:
  * - Producer for publishing click events asynchronously
  * - Consumer for processing click events from Kafka

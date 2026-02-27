@@ -4,8 +4,7 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
@@ -19,21 +18,18 @@ import java.io.IOException;
 /**
  * Interceptor that enforces rate limiting on HTTP requests.
  * Uses token bucket algorithm via Bucket4j.
- *
  * Rate limiting strategies:
  * - Public redirect endpoints: IP-based rate limiting
  * - Management API endpoints: User/API key-based rate limiting
  * - Link creation endpoints: Stricter user-based rate limiting
- *
  * When rate limit is exceeded:
  * - Returns HTTP 429 (Too Many Requests)
  * - Includes Retry-After header with seconds to wait
  * - Includes X-Rate-Limit-Retry-After-Seconds header
  */
+@Slf4j
 @Component
 public class RateLimitInterceptor implements HandlerInterceptor {
-
-    private static final Logger log = LoggerFactory.getLogger(RateLimitInterceptor.class);
 
     private final RateLimitConfig rateLimitConfig;
 

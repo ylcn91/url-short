@@ -1,6 +1,6 @@
 package com.urlshort.exception;
 
-import com.urlshort.dto.ErrorResponse;
+import com.urlshort.dto.common.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -265,6 +265,125 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    // --- New custom exception handlers ---
+
+    @ExceptionHandler(InvalidInputException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleInvalidInputException(
+            InvalidInputException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Invalid input [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(400).error("BAD_REQUEST")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(ForbiddenAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ErrorResponse> handleForbiddenAccessException(
+            ForbiddenAccessException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Forbidden access [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(403).error("FORBIDDEN")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(DomainAlreadyRegisteredException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ErrorResponse> handleDomainAlreadyRegisteredException(
+            DomainAlreadyRegisteredException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Domain already registered [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(409).error("CONFLICT")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(DomainNotVerifiedException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ErrorResponse> handleDomainNotVerifiedException(
+            DomainNotVerifiedException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Domain not verified [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(422).error("UNPROCESSABLE_ENTITY")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(LinkAlreadyPasswordProtectedException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ResponseEntity<ErrorResponse> handleLinkAlreadyPasswordProtectedException(
+            LinkAlreadyPasswordProtectedException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Link already password protected [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(409).error("CONFLICT")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(VariantWeightExceededException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    public ResponseEntity<ErrorResponse> handleVariantWeightExceededException(
+            VariantWeightExceededException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Variant weight exceeded [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(422).error("UNPROCESSABLE_ENTITY")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(ShortCodeCollisionException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleShortCodeCollisionException(
+            ShortCodeCollisionException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.error("Short code collision [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(500).error("INTERNAL_SERVER_ERROR")
+                .message("Failed to generate unique short code. Please try again.")
+                .path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(SignatureGenerationException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleSignatureGenerationException(
+            SignatureGenerationException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.error("Signature generation failed [requestId={}]: {}", requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(500).error("INTERNAL_SERVER_ERROR")
+                .message("An internal error occurred. Please try again later.")
+                .path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    // --- Safety-net handlers for transition period ---
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Unhandled IllegalArgumentException (should be migrated to custom exception) [requestId={}]: {}",
+                requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(400).error("BAD_REQUEST")
+                .message(ex.getMessage()).path(request.getRequestURI()).requestId(requestId).build());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(
+            IllegalStateException ex, HttpServletRequest request) {
+        String requestId = getOrCreateRequestId();
+        log.warn("Unhandled IllegalStateException (should be migrated to custom exception) [requestId={}]: {}",
+                requestId, ex.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ErrorResponse.builder()
+                .timestamp(LocalDateTime.now()).status(500).error("INTERNAL_SERVER_ERROR")
+                .message("An unexpected error occurred. Please try again later.")
+                .path(request.getRequestURI()).requestId(requestId).build());
     }
 
     /**

@@ -1,6 +1,11 @@
 package com.urlshort.controller;
 
-import com.urlshort.dto.*;
+import com.urlshort.dto.auth.AuthResponse;
+import com.urlshort.dto.auth.LoginRequest;
+import com.urlshort.dto.auth.RefreshTokenRequest;
+import com.urlshort.dto.auth.SignupRequest;
+import com.urlshort.dto.auth.UserResponse;
+import com.urlshort.dto.common.ErrorResponse;
 import com.urlshort.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -17,7 +22,6 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * REST controller for authentication endpoints.
- *
  * This controller provides endpoints for user authentication including:
  * - Login: Authenticate with email and password
  * - Signup: Register a new user and workspace

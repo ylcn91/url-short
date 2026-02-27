@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 /**
  * A/B Test variant for short links.
  * Allows testing different destinations for the same short link.
- *
  * Example:
  * - Short link: acme.com/promo
  * - Variant A (50%): Landing page version 1

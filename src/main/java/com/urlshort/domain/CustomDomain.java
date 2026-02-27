@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
 /**
  * Custom Domain entity for workspace-specific branded domains.
  * Allows workspaces to use their own domains for short links.
- *
  * Examples:
  * - go.acme.com
  * - links.company.io

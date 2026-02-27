@@ -18,7 +18,6 @@ import java.util.Objects;
 
 /**
  * Short link entity representing shortened URLs with deterministic reuse support.
- *
  * Core entity for URL shortening. Supports deterministic behavior where the same
  * URL in the same workspace always returns the same short code. The normalized_url
  * field is used for deterministic matching.

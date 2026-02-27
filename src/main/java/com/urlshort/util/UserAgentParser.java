@@ -8,7 +8,6 @@ import java.util.regex.Pattern;
 
 /**
  * Utility class for parsing User-Agent strings to extract browser, OS, and device type.
- *
  * This is a lightweight implementation without external dependencies.
  * For production use with high accuracy, consider using ua-parser-js or similar libraries.
  */

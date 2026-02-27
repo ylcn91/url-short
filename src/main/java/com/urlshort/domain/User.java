@@ -17,18 +17,18 @@ import java.util.Objects;
 
 /**
  * User entity representing user accounts within workspaces.
- *
  * Users belong to exactly one workspace and have a role that determines their
- * access level. Email addresses must be unique within a workspace but can be
- * reused across different workspaces.
+ * access level. Email addresses are globally unique across all workspaces.
  */
 @Entity
 @Table(
     name = "users",
     indexes = {
-        @Index(name = "idx_users_workspace_email", columnList = "workspace_id, email", unique = true),
         @Index(name = "idx_users_workspace_id", columnList = "workspace_id"),
         @Index(name = "idx_users_is_deleted", columnList = "is_deleted")
+    },
+    uniqueConstraints = {
+        @UniqueConstraint(name = "idx_users_email_active", columnNames = "email")
     }
 )
 @Data
@@ -155,20 +155,18 @@ public class User {
         return role == UserRole.VIEWER;
     }
 
-    // equals and hashCode based on business key (workspace + email)
+    // equals and hashCode based on business key (email is globally unique)
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof User user)) return false;
-        return workspace != null && email != null &&
-                workspace.equals(user.workspace) &&
-                email.equals(user.email);
+        return email != null && email.equals(user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(workspace, email);
+        return Objects.hash(email);
     }
 
     @Override

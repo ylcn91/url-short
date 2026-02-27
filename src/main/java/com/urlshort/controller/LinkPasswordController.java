@@ -1,13 +1,17 @@
 package com.urlshort.controller;
 
-import com.urlshort.dto.*;
+import com.urlshort.dto.common.ApiResponse;
+import com.urlshort.dto.password.LinkPasswordRequest;
+import com.urlshort.dto.password.LinkPasswordResponse;
+import com.urlshort.dto.password.PasswordValidationRequest;
+import com.urlshort.dto.password.PasswordValidationResponse;
 import com.urlshort.service.LinkPasswordService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,10 +25,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/links/{linkId}/password")
 @Tag(name = "Link Password", description = "Endpoints for password-protected links")
 @Slf4j
+@RequiredArgsConstructor
 public class LinkPasswordController {
 
-    @Autowired
-    private LinkPasswordService passwordService;
+    private final LinkPasswordService passwordService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")
@@ -48,7 +52,7 @@ public class LinkPasswordController {
         log.info("Validating password for link {}", linkId);
         PasswordValidationResponse response = passwordService.validatePassword(linkId, request);
 
-        if (!response.getValid()) {
+        if (!response.valid()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(ApiResponse.error("Invalid password"));
         }

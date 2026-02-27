@@ -42,13 +42,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
      */
     Page<User> findByWorkspaceIdAndIsDeletedFalse(Long workspaceId, Pageable pageable);
 
-    /**
-     * Finds a user by workspace ID and email address, excluding soft-deleted records.
-     * Used for checking duplicate emails within a workspace.
-     *
-     * @param workspaceId the workspace ID
-     * @param email the user's email address
-     * @return Optional containing the user if found
-     */
-    Optional<User> findByWorkspaceIdAndEmailAndIsDeletedFalse(Long workspaceId, String email);
 }

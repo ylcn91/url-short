@@ -1,13 +1,16 @@
 package com.urlshort.controller;
 
-import com.urlshort.dto.*;
+import com.urlshort.dto.common.ApiResponse;
+import com.urlshort.dto.variant.LinkVariantRequest;
+import com.urlshort.dto.variant.LinkVariantResponse;
+import com.urlshort.dto.variant.VariantStatsResponse;
 import com.urlshort.service.LinkVariantService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,10 +26,10 @@ import java.util.List;
 @RequestMapping("/api/v1/links/{linkId}/variants")
 @Tag(name = "A/B Testing", description = "Endpoints for A/B testing and link variants")
 @Slf4j
+@RequiredArgsConstructor
 public class LinkVariantController {
 
-    @Autowired
-    private LinkVariantService variantService;
+    private final LinkVariantService variantService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")

@@ -1,16 +1,16 @@
 package com.urlshort.controller;
 
-import com.urlshort.dto.ApiResponse;
-import com.urlshort.dto.CustomDomainRequest;
-import com.urlshort.dto.CustomDomainResponse;
-import com.urlshort.dto.DomainVerificationResponse;
+import com.urlshort.dto.common.ApiResponse;
+import com.urlshort.dto.domain.CustomDomainRequest;
+import com.urlshort.dto.domain.CustomDomainResponse;
+import com.urlshort.dto.domain.DomainVerificationResponse;
 import com.urlshort.service.CustomDomainService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -26,10 +26,10 @@ import java.util.List;
 @RequestMapping("/api/v1/domains")
 @Tag(name = "Custom Domains", description = "Endpoints for managing custom branded domains")
 @Slf4j
+@RequiredArgsConstructor
 public class CustomDomainController {
 
-    @Autowired
-    private CustomDomainService domainService;
+    private final CustomDomainService domainService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")

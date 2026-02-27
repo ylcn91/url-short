@@ -12,7 +12,6 @@ import java.util.Collections;
 
 /**
  * Custom implementation of Spring Security's UserDetails interface.
- *
  * This class wraps the User entity and provides Spring Security with
  * the necessary authentication and authorization information. It includes
  * workspace context to support multi-tenancy.

@@ -97,3 +97,6 @@ spring.log
 
 # Flyway
 flyway.conf
+
+# Playwright MCP
+.playwright-mcp/

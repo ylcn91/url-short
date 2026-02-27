@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 /**
  * UTM (Urchin Tracking Module) parameters for campaign tracking.
  * Embedded in ShortLink entity.
- *
  * Standard UTM parameters:
  * - utm_source: Identifies which site sent the traffic
  * - utm_medium: Identifies what type of link was used

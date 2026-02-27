@@ -53,25 +53,6 @@ public interface LinkHealthRepository extends JpaRepository<LinkHealth, Long> {
     List<LinkHealth> findByWorkspaceIdAndStatus(@Param("workspaceId") Long workspaceId, @Param("status") HealthStatus status);
 
     /**
-     * Counts unhealthy links for a workspace.
-     * Used for monitoring metrics.
-     *
-     * @param workspaceId the workspace ID
-     * @return count of unhealthy links (DEGRADED, UNHEALTHY, DOWN)
-     */
-    @Query("SELECT COUNT(lh) FROM LinkHealth lh WHERE lh.shortLink.workspace.id = :workspaceId AND lh.status IN ('DEGRADED', 'UNHEALTHY', 'DOWN')")
-    long countUnhealthyLinksByWorkspace(@Param("workspaceId") Long workspaceId);
-
-    /**
-     * Finds links with consecutive failures exceeding threshold.
-     * Used to trigger alerts.
-     *
-     * @param threshold minimum consecutive failures
-     * @return list of failing links
-     */
-    List<LinkHealth> findByConsecutiveFailuresGreaterThanEqual(Integer threshold);
-
-    /**
      * Deletes health record for a short link.
      * Used when a link is deleted.
      *

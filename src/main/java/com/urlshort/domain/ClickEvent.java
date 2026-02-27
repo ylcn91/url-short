@@ -12,7 +12,6 @@ import java.util.Objects;
 
 /**
  * Click event entity for analytics and tracking data.
- *
  * Records each click on a short link with detailed information about the visitor.
  * This entity uses hard delete strategy (not soft delete) as it's high-volume
  * time-series data. Consider table partitioning by date for optimal performance.

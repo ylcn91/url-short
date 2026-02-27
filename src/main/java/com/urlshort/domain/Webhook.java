@@ -17,7 +17,6 @@ import java.util.Set;
 /**
  * Webhook configuration for workspace events.
  * Allows workspaces to receive real-time notifications.
- *
  * Events:
  * - link.created
  * - link.clicked

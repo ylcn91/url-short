@@ -22,21 +22,17 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Cache configuration for the URL Shortener application.
- *
  * Supports two cache strategies:
  * 1. Redis Cache (distributed, persistent) - Primary cache manager
  * 2. Caffeine Cache (local, in-memory) - Fallback when Redis is unavailable
- *
  * Cache Names and TTL Settings:
  * - CACHE_SHORT_LINKS: 1 hour (hot path optimization for redirects)
  * - CACHE_WORKSPACES: 24 hours
  * - CACHE_USERS: 24 hours
- *
  * Cache Key Pattern:
  * - Short links: shortlink:{workspaceId}:{code}
  * - Workspaces: workspace:{workspaceId}
  * - Users: user:{userId}
- *
  * Features:
  * - Automatic eviction on update/delete operations via @CacheEvict
  * - Cache refresh via @CachePut for updates
@@ -49,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig {
 
     // Cache names constants
-    public static final String CACHE_SHORT_LINKS = "shortlinks";
+    public static final String CACHE_SHORT_LINKS = "shortLinks";
     public static final String CACHE_WORKSPACES = "workspaces";
     public static final String CACHE_USERS = "users";
 
@@ -73,7 +69,7 @@ public class CacheConfig {
      */
     @Bean
     @Primary
-    @ConditionalOnProperty(name = "spring.redis.enabled", havingValue = "true", matchIfMissing = false)
+    @ConditionalOnProperty(name = "app.redis.enabled", havingValue = "true", matchIfMissing = false)
     public CacheManager redisCacheManager(RedisConnectionFactory redisConnectionFactory) {
         log.info("Initializing Redis Cache Manager");
 
@@ -119,7 +115,7 @@ public class CacheConfig {
      * @return configured CaffeineCacheManager
      */
     @Bean
-    @ConditionalOnProperty(name = "spring.redis.enabled", havingValue = "false", matchIfMissing = true)
+    @ConditionalOnProperty(name = "app.redis.enabled", havingValue = "false", matchIfMissing = true)
     public CacheManager caffeineCacheManager() {
         log.info("Initializing Caffeine (Local) Cache Manager as fallback");
 

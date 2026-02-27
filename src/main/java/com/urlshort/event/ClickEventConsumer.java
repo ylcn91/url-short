@@ -3,14 +3,14 @@ package com.urlshort.event;
 import com.urlshort.domain.ClickEvent;
 import com.urlshort.domain.DeviceType;
 import com.urlshort.domain.ShortLink;
-import com.urlshort.dto.ClickEventDto;
+import com.urlshort.dto.event.ClickEventDto;
+import com.urlshort.exception.ClickEventProcessingException;
 import com.urlshort.repository.ClickEventRepository;
 import com.urlshort.repository.ShortLinkRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -25,7 +25,6 @@ import java.util.Optional;
 
 /**
  * Consumer to process click events from Kafka.
- *
  * Key features:
  * - Consumes events from "click-events" topic
  * - Batch processing for efficiency
@@ -33,13 +32,11 @@ import java.util.Optional;
  * - Manual commit after successful processing
  * - Error handling with dead-letter queue
  * - Metrics for consumed events and errors
- *
  * Consumer Group: click-analytics-processor
  */
+@Slf4j
 @Service
 public class ClickEventConsumer {
-
-    private static final Logger log = LoggerFactory.getLogger(ClickEventConsumer.class);
 
     private final ClickEventRepository clickEventRepository;
     private final ShortLinkRepository shortLinkRepository;
@@ -146,7 +143,7 @@ public class ClickEventConsumer {
 
             // Do NOT acknowledge - message will be retried or sent to DLQ
             // based on Kafka consumer configuration
-            throw new RuntimeException("Failed to process click event", ex);
+            throw new ClickEventProcessingException("Failed to process click event", ex);
 
         } finally {
             sample.stop(processingTimer);
@@ -194,7 +191,7 @@ public class ClickEventConsumer {
             errorCounter.increment();
             log.error("Error processing click event batch: size={}, error={}",
                     events.size(), ex.getMessage(), ex);
-            throw new RuntimeException("Failed to process click event batch", ex);
+            throw new ClickEventProcessingException("Failed to process click event batch", ex);
 
         } finally {
             sample.stop(processingTimer);
@@ -294,7 +291,6 @@ public class ClickEventConsumer {
                 .register(meterRegistry)
                 .increment();
 
-        // TODO: Consider persisting to a failed_events table for manual review
-        // or sending to external monitoring service (Datadog, New Relic, etc.)
+        // DLQ retains the event for replay. No additional persistence needed here.
     }
 }

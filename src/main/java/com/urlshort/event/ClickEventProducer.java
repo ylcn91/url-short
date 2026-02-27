@@ -1,10 +1,9 @@
 package com.urlshort.event;
 
-import com.urlshort.dto.ClickEventDto;
+import com.urlshort.dto.event.ClickEventDto;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -14,21 +13,18 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Service to publish click events to Kafka asynchronously.
- *
  * Key features:
  * - Async fire-and-forget publishing (< 5ms overhead)
  * - Error handling with logging (doesn't fail redirect on Kafka failure)
  * - Metrics for published events and errors
  * - Dead-letter queue for failed events
- *
  * Usage:
  * This service is called from the RedirectController after a successful redirect.
  * Publishing is asynchronous and does not block the HTTP response.
  */
+@Slf4j
 @Service
 public class ClickEventProducer {
-
-    private static final Logger log = LoggerFactory.getLogger(ClickEventProducer.class);
 
     private final KafkaTemplate<String, ClickEventDto> kafkaTemplate;
     private final String topicName;

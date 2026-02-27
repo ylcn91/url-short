@@ -20,7 +20,6 @@ import java.util.Objects;
 
 /**
  * Multi-tenant workspace entity representing a tenant/organization.
- *
  * Workspaces provide tenant isolation for the URL shortener platform. Each workspace
  * has its own set of users, short links, and API keys. The slug is used for subdomain
  * routing and URL-safe identification.

@@ -1,7 +1,7 @@
 package com.urlshort.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.urlshort.exception.InvalidInputException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
  * <p>
  * This class is thread-safe as all methods are static and work with immutable or locally-scoped data.
  * </p>
- *
  * <h2>Usage Examples:</h2>
  * <pre>{@code
  * // Basic canonicalization
@@ -54,20 +53,17 @@ import java.util.stream.Collectors;
  * canonical = UrlCanonicalizer.canonicalize("http://example.com/page#section");
  * // Returns: "http://example.com/page"
  * }</pre>
- *
  * <h2>Canonicalization Guarantees:</h2>
  * <ul>
  *   <li>Deterministic: Same input always produces same output</li>
  *   <li>Idempotent: canonicalize(canonicalize(url)) == canonicalize(url)</li>
  *   <li>Semantic Equivalence: Equivalent URLs produce identical canonical forms</li>
  * </ul>
- *
  * @see <a href="https://www.rfc-editor.org/rfc/rfc3986">RFC 3986 - URI Generic Syntax</a>
  * @since 1.0
  */
+@Slf4j
 public final class UrlCanonicalizer {
-
-    private static final Logger log = LoggerFactory.getLogger(UrlCanonicalizer.class);
 
     /**
      * Pattern for matching multiple consecutive slashes in URL paths.
@@ -147,12 +143,12 @@ public final class UrlCanonicalizer {
     public static String canonicalize(String url) {
         // Step 1: Trim whitespace
         if (url == null) {
-            throw new IllegalArgumentException("URL cannot be null");
+            throw new InvalidInputException("URL cannot be null");
         }
 
         String trimmed = url.trim();
         if (trimmed.isEmpty()) {
-            throw new IllegalArgumentException("URL cannot be empty");
+            throw new InvalidInputException("URL cannot be empty");
         }
 
         log.debug("Canonicalizing URL: {}", trimmed);
@@ -165,12 +161,12 @@ public final class UrlCanonicalizer {
         try {
             uri = new URI(urlWithScheme);
         } catch (URISyntaxException e) {
-            throw new IllegalArgumentException("Invalid URL format: " + trimmed, e);
+            throw new InvalidInputException("Invalid URL format: " + trimmed, e);
         }
 
         // Validate that we have required components
         if (uri.getHost() == null || uri.getHost().isEmpty()) {
-            throw new IllegalArgumentException("URL must have a valid host: " + trimmed);
+            throw new InvalidInputException("URL must have a valid host: " + trimmed);
         }
 
         // Step 4: Normalize scheme and host
@@ -226,13 +222,13 @@ public final class UrlCanonicalizer {
      */
     private static String normalizeScheme(String scheme) {
         if (scheme == null) {
-            throw new IllegalArgumentException("URL scheme cannot be null");
+            throw new InvalidInputException("URL scheme cannot be null");
         }
 
         String normalized = scheme.toLowerCase(Locale.ROOT);
 
         if (!ALLOWED_SCHEMES.contains(normalized)) {
-            throw new IllegalArgumentException(
+            throw new InvalidInputException(
                 "Only HTTP and HTTPS schemes are supported, got: " + scheme
             );
         }
@@ -440,7 +436,7 @@ public final class UrlCanonicalizer {
         try {
             canonicalize(url);
             return true;
-        } catch (IllegalArgumentException e) {
+        } catch (InvalidInputException e) {
             log.debug("URL validation failed for '{}': {}", url, e.getMessage());
             return false;
         }

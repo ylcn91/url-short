@@ -1,7 +1,7 @@
 package com.urlshort.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.urlshort.exception.InvalidInputException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -27,7 +27,6 @@ import java.security.NoSuchAlgorithmException;
  * This class is thread-safe as all methods are static and use thread-safe algorithms
  * (SHA-256 instances are created per invocation).
  * </p>
- *
  * <h2>Usage Examples:</h2>
  * <pre>{@code
  * // Generate short code for a URL in a workspace
@@ -47,7 +46,6 @@ import java.security.NoSuchAlgorithmException;
  * );
  * // Returns: Different code due to salt
  * }</pre>
- *
  * <h2>Algorithm Details:</h2>
  * <ol>
  *   <li>Construct hash input: normalizedUrl + "|" + workspaceId [+ "|" + retrySalt]</li>
@@ -55,7 +53,6 @@ import java.security.NoSuchAlgorithmException;
  *   <li>Extract first 8 bytes (64 bits) for encoding</li>
  *   <li>Encode to Base58 with target length of 10 characters</li>
  * </ol>
- *
  * <h2>Short Code Properties:</h2>
  * <ul>
  *   <li>Default length: 10 characters</li>
@@ -63,15 +60,13 @@ import java.security.NoSuchAlgorithmException;
  *   <li>Collision probability with 1M URLs in workspace: 0.0116%</li>
  *   <li>URL-safe and human-readable</li>
  * </ul>
- *
  * @see UrlCanonicalizer for URL normalization
  * @see Base58Encoder for encoding details
  * @see <a href="https://en.wikipedia.org/wiki/SHA-2">SHA-256 Algorithm</a>
  * @since 1.0
  */
+@Slf4j
 public final class ShortCodeGenerator {
-
-    private static final Logger log = LoggerFactory.getLogger(ShortCodeGenerator.class);
 
     /**
      * SHA-256 algorithm identifier.
@@ -234,19 +229,19 @@ public final class ShortCodeGenerator {
     private static void validateInputs(String normalizedUrl, Long workspaceId,
                                        int retrySalt, int codeLength) {
         if (normalizedUrl == null || normalizedUrl.trim().isEmpty()) {
-            throw new IllegalArgumentException("Normalized URL cannot be null or empty");
+            throw new InvalidInputException("Normalized URL cannot be null or empty");
         }
 
         if (workspaceId == null) {
-            throw new IllegalArgumentException("Workspace ID cannot be null");
+            throw new InvalidInputException("Workspace ID cannot be null");
         }
 
         if (retrySalt < 0) {
-            throw new IllegalArgumentException("Retry salt must be non-negative, got: " + retrySalt);
+            throw new InvalidInputException("Retry salt must be non-negative, got: " + retrySalt);
         }
 
         if (codeLength <= 0) {
-            throw new IllegalArgumentException("Code length must be positive, got: " + codeLength);
+            throw new InvalidInputException("Code length must be positive, got: " + codeLength);
         }
     }
 
@@ -368,7 +363,7 @@ public final class ShortCodeGenerator {
                                                          Long workspaceId,
                                                          int maxRetries) {
         if (maxRetries <= 0) {
-            throw new IllegalArgumentException("Max retries must be positive");
+            throw new InvalidInputException("Max retries must be positive");
         }
 
         String[] codes = new String[maxRetries];

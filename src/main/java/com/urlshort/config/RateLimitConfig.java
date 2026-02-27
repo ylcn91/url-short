@@ -2,9 +2,10 @@ package com.urlshort.config;
 
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
-import io.github.bucket4j.Refill;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
@@ -14,12 +15,14 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Rate limiting configuration using Bucket4j.
  * Provides token bucket-based rate limiting for different API endpoints.
- *
  * Rate limits:
  * - Public redirect endpoints: 100 requests per minute per IP
  * - Management API (authenticated): 1000 requests per minute per user
  * - Link creation: 50 requests per minute per user
  */
+@Slf4j
+@Getter
+@Setter
 @Configuration
 @ConfigurationProperties(prefix = "app.rate-limit")
 public class RateLimitConfig {
@@ -93,10 +96,10 @@ public class RateLimitConfig {
      * @return new Bucket instance
      */
     private Bucket createRedirectBucket() {
-        Bandwidth limit = Bandwidth.classic(
-            redirectRequestsPerMinute,
-            Refill.intervally(redirectRequestsPerMinute, Duration.ofMinutes(1))
-        );
+        Bandwidth limit = Bandwidth.builder()
+            .capacity(redirectRequestsPerMinute)
+            .refillIntervally(redirectRequestsPerMinute, Duration.ofMinutes(1))
+            .build();
         return Bucket.builder()
             .addLimit(limit)
             .build();
@@ -109,10 +112,10 @@ public class RateLimitConfig {
      * @return new Bucket instance
      */
     private Bucket createManagementBucket() {
-        Bandwidth limit = Bandwidth.classic(
-            managementRequestsPerMinute,
-            Refill.intervally(managementRequestsPerMinute, Duration.ofMinutes(1))
-        );
+        Bandwidth limit = Bandwidth.builder()
+            .capacity(managementRequestsPerMinute)
+            .refillIntervally(managementRequestsPerMinute, Duration.ofMinutes(1))
+            .build();
         return Bucket.builder()
             .addLimit(limit)
             .build();
@@ -125,10 +128,10 @@ public class RateLimitConfig {
      * @return new Bucket instance
      */
     private Bucket createCreationBucket() {
-        Bandwidth limit = Bandwidth.classic(
-            creationRequestsPerMinute,
-            Refill.intervally(creationRequestsPerMinute, Duration.ofMinutes(1))
-        );
+        Bandwidth limit = Bandwidth.builder()
+            .capacity(creationRequestsPerMinute)
+            .refillIntervally(creationRequestsPerMinute, Duration.ofMinutes(1))
+            .build();
         return Bucket.builder()
             .addLimit(limit)
             .build();
@@ -151,37 +154,4 @@ public class RateLimitConfig {
         return cache.size();
     }
 
-    // Getters and setters for configuration properties
-
-    public int getRedirectRequestsPerMinute() {
-        return redirectRequestsPerMinute;
-    }
-
-    public void setRedirectRequestsPerMinute(int redirectRequestsPerMinute) {
-        this.redirectRequestsPerMinute = redirectRequestsPerMinute;
-    }
-
-    public int getManagementRequestsPerMinute() {
-        return managementRequestsPerMinute;
-    }
-
-    public void setManagementRequestsPerMinute(int managementRequestsPerMinute) {
-        this.managementRequestsPerMinute = managementRequestsPerMinute;
-    }
-
-    public int getCreationRequestsPerMinute() {
-        return creationRequestsPerMinute;
-    }
-
-    public void setCreationRequestsPerMinute(int creationRequestsPerMinute) {
-        this.creationRequestsPerMinute = creationRequestsPerMinute;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 }

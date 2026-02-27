@@ -17,7 +17,6 @@ import java.util.Map;
 
 /**
  * JWT token provider for generating and validating JWT tokens.
- *
  * This component handles all JWT operations including token generation,
  * validation, and claims extraction. It uses JJWT library with HS512
  * algorithm for signing tokens.

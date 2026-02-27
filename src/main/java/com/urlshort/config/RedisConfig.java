@@ -26,7 +26,6 @@ import java.time.Duration;
  * Redis configuration for distributed caching.
  * Configures Redis connection factory, RedisTemplate for custom operations,
  * and serialization settings for efficient caching.
- *
  * Features:
  * - Connection pooling with configurable pool size
  * - JSON serialization for cache values
@@ -36,31 +35,31 @@ import java.time.Duration;
 @Slf4j
 @Configuration
 @EnableCaching
-@ConditionalOnProperty(name = "spring.redis.enabled", havingValue = "true", matchIfMissing = false)
+@ConditionalOnProperty(name = "app.redis.enabled", havingValue = "true", matchIfMissing = false)
 public class RedisConfig {
 
-    @Value("${spring.redis.host:localhost}")
+    @Value("${spring.data.redis.host:localhost}")
     private String host;
 
-    @Value("${spring.redis.port:6379}")
+    @Value("${spring.data.redis.port:6379}")
     private int port;
 
-    @Value("${spring.redis.password:}")
+    @Value("${spring.data.redis.password:}")
     private String password;
 
-    @Value("${spring.redis.timeout:2000}")
+    @Value("${spring.data.redis.timeout:2000}")
     private long timeout;
 
-    @Value("${spring.redis.lettuce.pool.max-active:8}")
+    @Value("${spring.data.redis.lettuce.pool.max-active:8}")
     private int maxActive;
 
-    @Value("${spring.redis.lettuce.pool.max-idle:8}")
+    @Value("${spring.data.redis.lettuce.pool.max-idle:8}")
     private int maxIdle;
 
-    @Value("${spring.redis.lettuce.pool.min-idle:0}")
+    @Value("${spring.data.redis.lettuce.pool.min-idle:0}")
     private int minIdle;
 
-    @Value("${spring.redis.lettuce.pool.max-wait:-1ms}")
+    @Value("${spring.data.redis.lettuce.pool.max-wait:-1ms}")
     private Duration maxWait;
 
     /**

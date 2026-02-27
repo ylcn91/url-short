@@ -27,7 +27,6 @@ import java.util.List;
 
 /**
  * Spring Security configuration for the URL shortener application.
- *
  * This configuration sets up JWT-based authentication, defines access rules for
  * various endpoints, and configures CORS for frontend integration. The application
  * uses stateless session management with JWT tokens.

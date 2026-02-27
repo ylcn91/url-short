@@ -19,7 +19,6 @@ import java.io.IOException;
 
 /**
  * JWT authentication filter for validating and processing JWT tokens.
- *
  * This filter intercepts incoming HTTP requests, extracts JWT tokens from
  * the Authorization header, validates them, and sets up the Spring Security
  * context if the token is valid. It extends OncePerRequestFilter to ensure

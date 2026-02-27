@@ -1,13 +1,15 @@
 package com.urlshort.controller;
 
-import com.urlshort.dto.*;
+import com.urlshort.dto.common.ApiResponse;
+import com.urlshort.dto.webhook.WebhookRequest;
+import com.urlshort.dto.webhook.WebhookResponse;
 import com.urlshort.service.WebhookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -23,10 +25,10 @@ import java.util.List;
 @RequestMapping("/api/v1/webhooks")
 @Tag(name = "Webhooks", description = "Endpoints for webhook configuration and event notifications")
 @Slf4j
+@RequiredArgsConstructor
 public class WebhookController {
 
-    @Autowired
-    private WebhookService webhookService;
+    private final WebhookService webhookService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'MEMBER')")

@@ -1,78 +1,196 @@
 package com.urlshort.service;
 
-import com.urlshort.dto.CustomDomainRequest;
-import com.urlshort.dto.CustomDomainResponse;
-import com.urlshort.dto.DomainVerificationResponse;
+import com.urlshort.domain.CustomDomain;
+import com.urlshort.domain.Workspace;
+import com.urlshort.dto.domain.CustomDomainRequest;
+import com.urlshort.dto.domain.CustomDomainResponse;
+import com.urlshort.dto.domain.DomainVerificationResponse;
+import com.urlshort.exception.DomainAlreadyRegisteredException;
+import com.urlshort.exception.DomainNotVerifiedException;
+import com.urlshort.exception.ResourceNotFoundException;
+import com.urlshort.repository.CustomDomainRepository;
+import com.urlshort.repository.WorkspaceRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
+import javax.naming.directory.Attribute;
+import javax.naming.directory.Attributes;
+import javax.naming.directory.DirContext;
+import javax.naming.directory.InitialDirContext;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Service interface for custom domain management.
- * <p>
- * Provides operations for registering, verifying, and managing custom branded
- * domains for workspaces. Domains go through a verification process using DNS
- * TXT records before they can be used for short links.
- * </p>
+ * Implementation of custom domain management service.
  */
-public interface CustomDomainService {
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CustomDomainService {
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-    /**
-     * Registers a new custom domain for a workspace.
-     * <p>
-     * Creates a domain record with PENDING status and generates a verification
-     * token for DNS TXT record validation.
-     * </p>
-     *
-     * @param workspaceId the workspace ID
-     * @param request the domain registration request
-     * @return the created domain with verification token
-     * @throws IllegalArgumentException if domain is already registered
-     */
-    CustomDomainResponse registerDomain(Long workspaceId, CustomDomainRequest request);
+    private final CustomDomainRepository domainRepository;
 
-    /**
-     * Verifies domain ownership via DNS TXT record check.
-     * <p>
-     * Checks if the TXT record with the verification token exists at the domain.
-     * Updates status to VERIFIED if successful.
-     * </p>
-     *
-     * @param domainId the domain ID
-     * @return verification result with status
-     */
-    DomainVerificationResponse verifyDomain(Long domainId);
+    private final WorkspaceRepository workspaceRepository;
 
-    /**
-     * Sets a domain as the default for a workspace.
-     * <p>
-     * Only one domain can be default at a time. Previous default is unset.
-     * </p>
-     *
-     * @param domainId the domain ID to set as default
-     * @return the updated domain
-     */
-    CustomDomainResponse setAsDefault(Long domainId);
+        @Transactional
+    public CustomDomainResponse registerDomain(Long workspaceId, CustomDomainRequest request) {
+        log.info("Registering custom domain {} for workspace {}", request.getDomain(), workspaceId);
 
-    /**
-     * Retrieves all domains for a workspace.
-     *
-     * @param workspaceId the workspace ID
-     * @return list of custom domains
-     */
-    List<CustomDomainResponse> getWorkspaceDomains(Long workspaceId);
+        // Check if domain already exists
+        if (domainRepository.existsByDomain(request.getDomain())) {
+            throw new DomainAlreadyRegisteredException("Domain already registered: " + request.getDomain());
+        }
 
-    /**
-     * Retrieves a domain by name.
-     *
-     * @param domain the domain name
-     * @return the domain if found
-     */
-    CustomDomainResponse getDomainByName(String domain);
+        Workspace workspace = workspaceRepository.findById(workspaceId)
+                .orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
 
-    /**
-     * Deletes a custom domain.
-     *
-     * @param domainId the domain ID
-     */
-    void deleteDomain(Long domainId);
+        // Generate verification token
+        String verificationToken = generateVerificationToken();
+
+        CustomDomain domain = CustomDomain.builder()
+                .workspace(workspace)
+                .domain(request.getDomain())
+                .status(CustomDomain.DomainStatus.PENDING)
+                .verificationToken(verificationToken)
+                .useHttps(request.getUseHttps() != null ? request.getUseHttps() : true)
+                .isDefault(false)
+                .build();
+
+        CustomDomain saved = domainRepository.save(domain);
+        log.info("Domain {} registered with verification token", request.getDomain());
+
+        return toResponse(saved);
+    }
+
+        @Transactional
+    public DomainVerificationResponse verifyDomain(Long domainId) {
+        log.info("Verifying domain {}", domainId);
+
+        CustomDomain domain = domainRepository.findById(domainId)
+                .orElseThrow(() -> new ResourceNotFoundException("Domain not found"));
+
+        // TODO: Implement actual DNS TXT record check
+        // For now, simulate verification
+        boolean verified = performDnsVerification(domain.getDomain(), domain.getVerificationToken());
+
+        if (verified) {
+            domain.setStatus(CustomDomain.DomainStatus.VERIFIED);
+            domain.setVerifiedAt(LocalDateTime.now());
+            domainRepository.save(domain);
+            log.info("Domain {} verified successfully", domain.getDomain());
+        } else {
+            domain.setStatus(CustomDomain.DomainStatus.FAILED);
+            domainRepository.save(domain);
+            log.warn("Domain {} verification failed", domain.getDomain());
+        }
+
+        return DomainVerificationResponse.builder()
+                .verified(verified)
+                .domain(domain.getDomain())
+                .status(domain.getStatus().name())
+                .message(verified ? "Domain verified successfully" : "Verification failed - TXT record not found")
+                .build();
+    }
+
+        @Transactional
+    public CustomDomainResponse setAsDefault(Long domainId) {
+        log.info("Setting domain {} as default", domainId);
+
+        CustomDomain domain = domainRepository.findById(domainId)
+                .orElseThrow(() -> new ResourceNotFoundException("Domain not found"));
+
+        if (domain.getStatus() != CustomDomain.DomainStatus.VERIFIED) {
+            throw new DomainNotVerifiedException("Only verified domains can be set as default");
+        }
+
+        // Unset current default
+        domainRepository.findByWorkspaceIdAndIsDefault(domain.getWorkspace().getId(), true)
+                .ifPresent(currentDefault -> {
+                    currentDefault.setIsDefault(false);
+                    domainRepository.save(currentDefault);
+                });
+
+        // Set new default
+        domain.setIsDefault(true);
+        CustomDomain saved = domainRepository.save(domain);
+
+        return toResponse(saved);
+    }
+
+        @Transactional(readOnly = true)
+    public List<CustomDomainResponse> getWorkspaceDomains(Long workspaceId) {
+        return domainRepository.findByWorkspaceId(workspaceId).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+        @Transactional(readOnly = true)
+    public CustomDomainResponse getDomainByName(String domain) {
+        CustomDomain customDomain = domainRepository.findByDomain(domain)
+                .orElseThrow(() -> new ResourceNotFoundException("Domain not found"));
+        return toResponse(customDomain);
+    }
+
+        @Transactional
+    public void deleteDomain(Long domainId) {
+        log.info("Deleting domain {}", domainId);
+        domainRepository.deleteById(domainId);
+    }
+
+    private String generateVerificationToken() {
+        byte[] bytes = new byte[32];
+        RANDOM.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    private boolean performDnsVerification(String domain, String expectedToken) {
+        try {
+            Hashtable<String, String> env = new Hashtable<>();
+            env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.dns.DnsContextFactory");
+            DirContext ctx = new InitialDirContext(env);
+
+            Attributes attrs = ctx.getAttributes(
+                    "_url-short-verification." + domain, new String[]{"TXT"});
+            Attribute txtRecords = attrs.get("TXT");
+
+            if (txtRecords != null) {
+                for (int i = 0; i < txtRecords.size(); i++) {
+                    String record = txtRecords.get(i).toString().replace("\"", "");
+                    if (record.equals(expectedToken)) {
+                        log.info("DNS TXT record verified for domain {}", domain);
+                        return true;
+                    }
+                }
+            }
+
+            log.warn("DNS TXT record not found for domain {} (expected token in _url-short-verification.{})",
+                    domain, domain);
+            return false;
+        } catch (NamingException e) {
+            log.warn("DNS lookup failed for {}: {}", domain, e.getMessage());
+            return false;
+        }
+    }
+
+    private CustomDomainResponse toResponse(CustomDomain domain) {
+        return CustomDomainResponse.builder()
+                .id(domain.getId())
+                .domain(domain.getDomain())
+                .status(domain.getStatus().name())
+                .verificationToken(domain.getVerificationToken())
+                .verifiedAt(domain.getVerifiedAt())
+                .useHttps(domain.getUseHttps())
+                .isDefault(domain.getIsDefault())
+                .createdAt(domain.getCreatedAt())
+                .build();
+    }
 }

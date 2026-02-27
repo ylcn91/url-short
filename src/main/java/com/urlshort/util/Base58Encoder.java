@@ -1,7 +1,7 @@
 package com.urlshort.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.urlshort.exception.InvalidInputException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -20,7 +20,6 @@ import java.util.Arrays;
  * <p>
  * This class is thread-safe as all methods are static and work with immutable or locally-scoped data.
  * </p>
- *
  * <h2>Usage Examples:</h2>
  * <pre>{@code
  * // Encode a long value
@@ -32,7 +31,6 @@ import java.util.Arrays;
  * String shortCode = Base58Encoder.encode(hash, 10);
  * // Result: 10-character Base58 encoded string
  * }</pre>
- *
  * <h2>Algorithm Details:</h2>
  * <ul>
  *   <li>Alphabet: 58 characters (excludes 0, O, I, l)</li>
@@ -40,13 +38,11 @@ import java.util.Arrays;
  *   <li>Padding: Left-padded with '1' to reach target length</li>
  *   <li>Byte order: Big-endian for hash-to-integer conversion</li>
  * </ul>
- *
  * @see <a href="https://en.wikipedia.org/wiki/Base58">Base58 Encoding</a>
  * @since 1.0
  */
+@Slf4j
 public final class Base58Encoder {
-
-    private static final Logger log = LoggerFactory.getLogger(Base58Encoder.class);
 
     /**
      * Base58 alphabet excluding visually ambiguous characters.
@@ -93,7 +89,7 @@ public final class Base58Encoder {
      */
     public static String encode(long value) {
         if (value < 0) {
-            throw new IllegalArgumentException("Value must be non-negative");
+            throw new InvalidInputException("Value must be non-negative");
         }
 
         if (value == 0) {
@@ -146,21 +142,22 @@ public final class Base58Encoder {
      */
     public static String encode(byte[] hash, int length) {
         if (hash == null || hash.length == 0) {
-            throw new IllegalArgumentException("Hash cannot be null or empty");
+            throw new InvalidInputException("Hash cannot be null or empty");
         }
         if (length <= 0) {
-            throw new IllegalArgumentException("Length must be positive");
+            throw new InvalidInputException("Length must be positive");
         }
 
         // Take first 8 bytes (64 bits) from hash for standard encoding
         int bytesToUse = Math.min(8, hash.length);
         byte[] extracted = Arrays.copyOf(hash, bytesToUse);
 
-        // Convert bytes to unsigned long (big-endian)
+        // Convert bytes to unsigned long (big-endian), masking sign bit
         long value = 0;
         for (int i = 0; i < extracted.length; i++) {
             value = (value << 8) | (extracted[i] & 0xFF);
         }
+        value = value & Long.MAX_VALUE;
 
         // Encode to Base58
         String encoded = encode(value);
@@ -225,10 +222,10 @@ public final class Base58Encoder {
      */
     public static String encodeLarge(byte[] hash, int length) {
         if (hash == null || hash.length == 0) {
-            throw new IllegalArgumentException("Hash cannot be null or empty");
+            throw new InvalidInputException("Hash cannot be null or empty");
         }
         if (length <= 0) {
-            throw new IllegalArgumentException("Length must be positive");
+            throw new InvalidInputException("Length must be positive");
         }
 
         // Convert byte array to BigInteger (unsigned, big-endian)
