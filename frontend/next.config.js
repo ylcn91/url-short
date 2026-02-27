@@ -5,7 +5,7 @@ const nextConfig = {
   reactStrictMode: true,
 
   // Static export only for GitHub Pages deployment
-  ...(isGitHubPages && { output: 'export' }),
+  ...(isGitHubPages && { output: 'export', trailingSlash: true }),
 
   basePath: isGitHubPages ? '/url-short' : '',
 
